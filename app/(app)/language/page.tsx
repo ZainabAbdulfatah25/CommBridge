@@ -13,10 +13,9 @@ export default function VoiceTranslationPage() {
   const [language, setLanguage] = useState("English")
   const [inputText, setInputText] = useState("")
   const [isRecording, setIsRecording] = useState(false)
-  const [signVideoUrl, setSignVideoUrl] = useState<string | null>(null)
-  const [isLoadingSign, setIsLoadingSign] = useState(false)
+  const [currentWord, setCurrentWord] = useState("")
+  const [allWords, setAllWords] = useState<string[]>([])
   const recognitionRef = useRef<any>(null)
-  const videoRef = useRef<HTMLVideoElement>(null)
 
   const languageMap = useRef<Record<string, string>>({
     English: "en-US",
@@ -24,33 +23,6 @@ export default function VoiceTranslationPage() {
     Pidgin: "en-NG",
     Arabic: "ar-SA",
   })
-
-  const fetchSignLanguageVideo = useCallback(
-    async (text: string) => {
-      if (!text.trim()) return
-
-      setIsLoadingSign(true)
-      try {
-        // Using Signapse API or similar sign language translation service
-        // For demo purposes, we'll use a placeholder API structure
-        const response = await fetch("/api/sign-translate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text, language }),
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          setSignVideoUrl(data.videoUrl)
-        }
-      } catch (error) {
-        console.error("Error fetching sign language:", error)
-      } finally {
-        setIsLoadingSign(false)
-      }
-    },
-    [language],
-  )
 
   useEffect(() => {
     if (typeof window !== "undefined" && "webkitSpeechRecognition" in window) {
@@ -67,8 +39,10 @@ export default function VoiceTranslationPage() {
             .join("")
           setInputText(transcript)
 
-          if (transcript.trim()) {
-            fetchSignLanguageVideo(transcript)
+          const words = transcript.trim().split(/\s+/).filter(Boolean)
+          if (words.length > 0) {
+            setCurrentWord(words[words.length - 1])
+            setAllWords(words)
           }
         }
 
@@ -84,14 +58,7 @@ export default function VoiceTranslationPage() {
 
       recognitionRef.current.lang = languageMap.current[language] || "en-US"
     }
-  }, [language, fetchSignLanguageVideo])
-
-  useEffect(() => {
-    if (signVideoUrl && videoRef.current) {
-      videoRef.current.load()
-      videoRef.current.play().catch((err) => console.warn("Video autoplay prevented:", err))
-    }
-  }, [signVideoUrl])
+  }, [language])
 
   const handleLanguageChange = useCallback(
     (newLanguage: string) => {
@@ -100,7 +67,8 @@ export default function VoiceTranslationPage() {
         recognitionRef.current.stop()
       }
       setIsRecording(false)
-      setSignVideoUrl(null)
+      setCurrentWord("")
+      setAllWords([])
     },
     [isRecording],
   )
@@ -117,18 +85,14 @@ export default function VoiceTranslationPage() {
       try {
         recognitionRef.current.start()
         setIsRecording(true)
-        setSignVideoUrl(null)
+        setCurrentWord("")
+        setAllWords([])
+        setInputText("")
       } catch (error) {
         console.warn("Could not start recognition:", error)
       }
     }
   }, [isRecording])
-
-  const handleTextTranslate = useCallback(() => {
-    if (inputText.trim()) {
-      fetchSignLanguageVideo(inputText)
-    }
-  }, [inputText, fetchSignLanguageVideo])
 
   return (
     <div className="h-full">
@@ -206,8 +170,14 @@ export default function VoiceTranslationPage() {
               <input
                 type="text"
                 value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleTextTranslate()}
+                onChange={(e) => {
+                  setInputText(e.target.value)
+                  const words = e.target.value.trim().split(/\s+/).filter(Boolean)
+                  if (words.length > 0) {
+                    setCurrentWord(words[words.length - 1])
+                    setAllWords(words)
+                  }
+                }}
                 className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base md:text-lg focus:border-[#3b82f6] focus:outline-hidden focus:ring-2 focus:ring-[#3b82f6]/20"
                 placeholder={`Type or speak in ${language}...`}
               />
@@ -226,28 +196,40 @@ export default function VoiceTranslationPage() {
             )}
           </div>
 
-          {/* Sign Language Display - Real Interpreter */}
           <div className="rounded-lg bg-white p-4 md:p-6 shadow-sm">
             <h3 className="mb-4 text-base md:text-lg font-semibold text-gray-900">Sign Language Interpreter</h3>
             <div className="flex min-h-[300px] md:min-h-[400px] flex-col items-center justify-center rounded-lg bg-gradient-to-br from-purple-50 to-blue-50 p-6 md:p-8">
-              {isLoadingSign ? (
-                <div className="flex flex-col items-center gap-4">
-                  <div className="h-16 w-16 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
-                  <p className="text-gray-600">Loading sign language interpretation...</p>
-                </div>
-              ) : signVideoUrl ? (
-                <div className="w-full max-w-2xl">
-                  <video ref={videoRef} className="w-full rounded-lg shadow-lg" controls autoPlay loop>
-                    <source src={signVideoUrl} type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                  <div className="mt-4 rounded-lg bg-white/70 p-4 backdrop-blur-sm">
-                    <p className="text-center text-sm md:text-base font-medium text-gray-800">{inputText}</p>
+              {currentWord ? (
+                <div className="flex flex-col items-center gap-6 w-full">
+                  {/* Avatar Display */}
+                  <div className="relative">
+                    <div className="h-48 w-48 md:h-64 md:w-64 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-2xl">
+                      <div className="h-44 w-44 md:h-60 md:w-60 rounded-full bg-white flex items-center justify-center">
+                        <div className="text-6xl md:text-8xl animate-bounce">🤟</div>
+                      </div>
+                    </div>
+                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg">
+                      <p className="text-sm font-medium">Interpreting...</p>
+                    </div>
+                  </div>
+
+                  {/* Current Word Display */}
+                  <div className="rounded-xl bg-white/90 backdrop-blur-sm p-6 md:p-8 shadow-lg border-2 border-blue-200 w-full max-w-2xl">
+                    <div className="text-center">
+                      <p className="text-xs md:text-sm text-gray-500 mb-2 uppercase tracking-wide">Current Sign</p>
+                      <p className="text-4xl md:text-6xl font-bold text-blue-600 mb-4">{currentWord}</p>
+                      <div className="border-t border-gray-200 pt-4">
+                        <p className="text-xs md:text-sm text-gray-500 mb-2 uppercase tracking-wide">Full Text</p>
+                        <p className="text-base md:text-xl text-gray-700 leading-relaxed">{inputText}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : (
                 <div className="text-center space-y-4">
-                  <div className="text-5xl md:text-6xl">🤟</div>
+                  <div className="h-48 w-48 md:h-64 md:w-64 mx-auto rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                    <div className="text-6xl md:text-8xl opacity-50">🤟</div>
+                  </div>
                   <p className="text-sm md:text-lg text-gray-500 px-4">
                     {isRecording
                       ? "Listening... Instant sign language will appear"
