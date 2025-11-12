@@ -1,6 +1,4 @@
-# CommBridge UI clone (2)
-
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+# CommBridge
 
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/zainab-abdulfatahs-projects/v0-comm-bridge-ui-clone-4a)
 
