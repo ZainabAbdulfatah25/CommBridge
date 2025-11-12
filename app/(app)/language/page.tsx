@@ -97,7 +97,7 @@ export default function VoiceTranslationPage() {
       clearInterval(animationIntervalRef.current)
     }
 
-    if (inputText && (isSpeaking || isRecording)) {
+    if (inputText && isRecording) {
       setIsAnimating(true)
       const words = inputText.split(" ")
       let wordIndex = 0
@@ -120,22 +120,22 @@ export default function VoiceTranslationPage() {
         clearInterval(animationIntervalRef.current)
       }
     }
-  }, [inputText, isSpeaking, isRecording])
+  }, [inputText, isRecording])
 
-  const handleStartSpeaking = useCallback(() => {
-    if (isSpeaking) {
-      setIsSpeaking(false)
-      if (isRecording && recognitionRef.current) {
-        recognitionRef.current.stop()
-      }
-    } else {
-      if (!inputText.trim()) {
-        alert("Please type some text or use the microphone first")
-        return
-      }
-      setIsSpeaking(true)
-    }
-  }, [isSpeaking, isRecording, inputText])
+  // const handleStartSpeaking = useCallback(() => {
+  //   if (isSpeaking) {
+  //     setIsSpeaking(false)
+  //     if (isRecording && recognitionRef.current) {
+  //       recognitionRef.current.stop()
+  //     }
+  //   } else {
+  //     if (!inputText.trim()) {
+  //       alert("Please type some text or use the microphone first")
+  //       return
+  //     }
+  //     setIsSpeaking(true)
+  //   }
+  // }, [isSpeaking, isRecording, inputText])
 
   return (
     <div className="h-full">
@@ -248,7 +248,9 @@ export default function VoiceTranslationPage() {
                   </div>
                   <div className="text-center space-y-2">
                     <p className="text-xl md:text-2xl font-bold text-gray-800 animate-pulse">{currentWord}</p>
-                    <p className="text-xs md:text-sm text-gray-600">Currently signing in {language}</p>
+                    <p className="text-xs md:text-sm text-gray-600">
+                      {isRecording ? "Recording in" : "Signing in"} {language}
+                    </p>
                   </div>
                   <div className="max-w-md rounded-lg bg-white/50 p-3 md:p-4 backdrop-blur-sm">
                     <p className="text-center text-sm md:text-base text-gray-700">{inputText}</p>
@@ -258,9 +260,9 @@ export default function VoiceTranslationPage() {
                 <div className="text-center space-y-4">
                   <div className="text-5xl md:text-6xl">🤟</div>
                   <p className="text-sm md:text-lg text-gray-500 px-4">
-                    {inputText
-                      ? "Click 'Start Speaking' to see sign language animation"
-                      : `Type text or use the microphone to begin in ${language}`}
+                    {isRecording
+                      ? "Speak now to see real-time sign animation..."
+                      : `Click the microphone or type to begin in ${language}`}
                   </p>
                 </div>
               )}
@@ -268,16 +270,6 @@ export default function VoiceTranslationPage() {
           </div>
 
           {/* Start Speaking Button */}
-          <Button
-            size="lg"
-            className={`w-full h-12 md:h-14 text-base md:text-lg ${
-              isSpeaking ? "bg-red-500 hover:bg-red-600" : "bg-[#3b82f6] hover:bg-[#2563eb]"
-            } text-white`}
-            onClick={handleStartSpeaking}
-            disabled={!inputText.trim() && !isSpeaking}
-          >
-            {isSpeaking ? "Stop Speaking" : "Start Speaking"}
-          </Button>
         </div>
       </div>
     </div>
