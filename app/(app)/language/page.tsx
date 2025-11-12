@@ -262,7 +262,7 @@ export default function VoiceTranslationPage() {
                   <p className="text-sm md:text-lg text-gray-500 px-4">
                     {isRecording
                       ? "Speak now to see real-time sign animation..."
-                      : `Click the microphone or type to begin in ${language}`}
+                      : "Click microphone to start speaking"}
                   </p>
                 </div>
               )}
