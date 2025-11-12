@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect, useCallback, useTransition } from "react"
+import { useState, useEffect, useCallback, useTransition, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { useRouter, useParams } from "next/navigation"
-import { ArrowLeft, Volume2 } from "lucide-react"
+import { ArrowLeft, Volume2, Mic } from "lucide-react"
 import { useUser } from "@/contexts/user-context"
 
 type LessonContent = {
@@ -337,12 +337,103 @@ export default function LessonModulePage() {
   const [isPending, startTransition] = useTransition()
   const { completeLesson, addActivity, addAchievement } = useUser()
 
+  const [isRecording, setIsRecording] = useState(false)
+  const [spokenText, setSpokenText] = useState("")
+  const [isAnimating, setIsAnimating] = useState(false)
+  const [currentWord, setCurrentWord] = useState("")
+  const recognitionRef = useRef<any>(null)
+  const animationIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
   const moduleContent = moduleData[module]
 
   const playAudio = useCallback(() => {
     const utterance = new SpeechSynthesisUtterance(moduleContent?.lessons[currentLesson]?.word || "")
     speechSynthesis.speak(utterance)
   }, [currentLesson, moduleContent])
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && "webkitSpeechRecognition" in window) {
+      if (!recognitionRef.current) {
+        const SpeechRecognition = (window as any).webkitSpeechRecognition
+        recognitionRef.current = new SpeechRecognition()
+        recognitionRef.current.continuous = true
+        recognitionRef.current.interimResults = true
+        recognitionRef.current.lang = "en-US"
+
+        recognitionRef.current.onresult = (event: any) => {
+          const transcript = Array.from(event.results)
+            .map((result: any) => result[0])
+            .map((result) => result.transcript)
+            .join("")
+          setSpokenText(transcript)
+        }
+
+        recognitionRef.current.onerror = (event: any) => {
+          console.warn("[v0] Speech recognition error:", event.error)
+          setIsRecording(false)
+        }
+
+        recognitionRef.current.onend = () => {
+          setIsRecording(false)
+        }
+      }
+    }
+
+    return () => {
+      if (animationIntervalRef.current) {
+        clearInterval(animationIntervalRef.current)
+      }
+    }
+  }, [])
+
+  const handleMicClick = useCallback(() => {
+    if (!recognitionRef.current) {
+      alert("Speech recognition is not supported in your browser.")
+      return
+    }
+
+    if (isRecording) {
+      recognitionRef.current.stop()
+    } else {
+      try {
+        setSpokenText("")
+        recognitionRef.current.start()
+        setIsRecording(true)
+      } catch (error) {
+        console.warn("[v0] Could not start recognition:", error)
+      }
+    }
+  }, [isRecording])
+
+  useEffect(() => {
+    if (animationIntervalRef.current) {
+      clearInterval(animationIntervalRef.current)
+    }
+
+    if (spokenText && isRecording) {
+      setIsAnimating(true)
+      const words = spokenText.split(" ")
+      let wordIndex = 0
+
+      animationIntervalRef.current = setInterval(() => {
+        if (wordIndex < words.length) {
+          setCurrentWord(words[wordIndex])
+          wordIndex++
+        } else {
+          wordIndex = 0
+        }
+      }, 800)
+    } else {
+      setIsAnimating(false)
+      setCurrentWord("")
+    }
+
+    return () => {
+      if (animationIntervalRef.current) {
+        clearInterval(animationIntervalRef.current)
+      }
+    }
+  }, [spokenText, isRecording])
 
   useEffect(() => {
     if (!moduleContent) {
@@ -354,6 +445,11 @@ export default function LessonModulePage() {
 
   useEffect(() => {
     setImageLoaded(false)
+    setSpokenText("")
+    setIsRecording(false)
+    if (recognitionRef.current && isRecording) {
+      recognitionRef.current.stop()
+    }
   }, [currentLesson])
 
   if (!moduleContent) {
@@ -440,24 +536,66 @@ export default function LessonModulePage() {
                 <p className="text-lg text-gray-600">{currentLessonData.translation}</p>
               </div>
 
-              {/* Sign Image with Loading State */}
               <div className="flex justify-center">
                 <div className="relative h-80 w-80 overflow-hidden rounded-lg bg-gray-100">
-                  {!imageLoaded && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-[#3b82f6]" />
+                  {isAnimating && spokenText ? (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 p-6">
+                      <div className="relative mb-4">
+                        <div className="h-32 w-32 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 animate-pulse shadow-lg" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="h-24 w-24 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center">
+                            <div className="text-5xl">👋</div>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-2xl font-bold text-gray-800 animate-pulse mb-2">{currentWord}</p>
+                      <p className="text-sm text-gray-600 text-center max-w-xs">{spokenText}</p>
                     </div>
+                  ) : (
+                    <>
+                      {!imageLoaded && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-[#3b82f6]" />
+                        </div>
+                      )}
+                      <img
+                        src={currentLessonData.imageUrl || "/placeholder.svg"}
+                        alt={currentLessonData.word}
+                        className={`h-full w-full object-cover transition-opacity duration-300 ${
+                          imageLoaded ? "opacity-100" : "opacity-0"
+                        }`}
+                        onLoad={() => setImageLoaded(true)}
+                        loading="lazy"
+                      />
+                    </>
                   )}
-                  <img
-                    src={currentLessonData.imageUrl || "/placeholder.svg"}
-                    alt={currentLessonData.word}
-                    className={`h-full w-full object-cover transition-opacity duration-300 ${
-                      imageLoaded ? "opacity-100" : "opacity-0"
-                    }`}
-                    onLoad={() => setImageLoaded(true)}
-                    loading="lazy"
-                  />
                 </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-center gap-3">
+                  <p className="text-sm font-medium text-gray-700">Practice Speaking:</p>
+                  <button
+                    className={`flex h-12 w-12 items-center justify-center rounded-full transition-all ${
+                      isRecording ? "animate-pulse bg-red-500" : "bg-[#3b82f6]"
+                    } hover:opacity-90`}
+                    onClick={handleMicClick}
+                    title={isRecording ? "Stop recording" : "Start recording"}
+                  >
+                    <Mic className="h-6 w-6 text-white" />
+                  </button>
+                </div>
+                {isRecording && (
+                  <div className="text-center">
+                    <p className="text-sm text-red-500 animate-pulse">🔴 Recording... Say "{currentLessonData.word}"</p>
+                  </div>
+                )}
+                {spokenText && !isRecording && (
+                  <div className="rounded-lg bg-blue-50 p-4 text-center">
+                    <p className="text-sm text-gray-600 mb-1">You said:</p>
+                    <p className="text-lg font-semibold text-gray-800">{spokenText}</p>
+                  </div>
+                )}
               </div>
 
               {/* Show Answer Button */}
