@@ -8,34 +8,38 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Text is required" }, { status: 400 })
     }
 
-    // Example: Using Signapse API (https://signapse.ai/)
-    // You'll need to sign up for an API key and add it to your environment variables
+    const apiKey = process.env.SIGNAPSE_API_KEY
 
-    // For demonstration, returning a mock video URL
-    // Replace this with actual API call to Signapse, SignAvatar, or AWS GenASL
+    if (!apiKey) {
+      console.error("SIGNAPSE_API_KEY is not configured")
+      return NextResponse.json({ error: "Sign language API not configured" }, { status: 500 })
+    }
 
-    /*
-    // Real implementation would look like:
-    const response = await fetch('https://api.signapse.ai/translate', {
-      method: 'POST',
+    // Call Signapse API to get sign language video
+    const response = await fetch("https://api.signapse.ai/v1/translate", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${process.env.SIGNAPSE_API_KEY}`,
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         text: text,
-        language: language,
-        format: 'video'
-      })
+        language: language.toLowerCase(),
+        format: "video",
+        avatar: "default",
+      }),
     })
-    
-    const data = await response.json()
-    return NextResponse.json({ videoUrl: data.videoUrl })
-    */
 
-    // Demo response - replace with actual API integration
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.error("Signapse API error:", errorData)
+      return NextResponse.json({ error: "Failed to generate sign language video" }, { status: response.status })
+    }
+
+    const data = await response.json()
     return NextResponse.json({
-      videoUrl: `/placeholder-sign-video.mp4?text=${encodeURIComponent(text)}`,
+      videoUrl: data.videoUrl || data.url,
+      avatarData: data.avatarData,
       message: "Sign language video generated successfully",
     })
   } catch (error) {

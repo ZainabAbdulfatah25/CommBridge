@@ -15,7 +15,11 @@ export default function VoiceTranslationPage() {
   const [isRecording, setIsRecording] = useState(false)
   const [currentWord, setCurrentWord] = useState("")
   const [allWords, setAllWords] = useState<string[]>([])
+  // <CHANGE> Add state for real-time sign language avatars from API
+  const [signAvatars, setSignAvatars] = useState<Record<string, string>>({})
+  const [isLoadingSign, setIsLoadingSign] = useState(false)
   const recognitionRef = useRef<any>(null)
+  const lastProcessedWordRef = useRef("")
 
   const languageMap = useRef<Record<string, string>>({
     English: "en-US",
@@ -60,6 +64,39 @@ export default function VoiceTranslationPage() {
     }
   }, [language])
 
+  // <CHANGE> Fetch sign language avatar from API when current word changes
+  useEffect(() => {
+    const fetchSignAvatar = async () => {
+      if (!currentWord || currentWord === lastProcessedWordRef.current) return
+      if (signAvatars[currentWord]) return // Already have this word
+
+      lastProcessedWordRef.current = currentWord
+      setIsLoadingSign(true)
+
+      try {
+        const response = await fetch("/api/sign-translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: currentWord, language }),
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setSignAvatars((prev) => ({
+            ...prev,
+            [currentWord]: data.videoUrl || data.avatarData,
+          }))
+        }
+      } catch (error) {
+        console.error("Failed to fetch sign avatar:", error)
+      } finally {
+        setIsLoadingSign(false)
+      }
+    }
+
+    fetchSignAvatar()
+  }, [currentWord, language, signAvatars])
+
   const handleLanguageChange = useCallback(
     (newLanguage: string) => {
       setLanguage(newLanguage)
@@ -69,6 +106,8 @@ export default function VoiceTranslationPage() {
       setIsRecording(false)
       setCurrentWord("")
       setAllWords([])
+      setSignAvatars({})
+      lastProcessedWordRef.current = ""
     },
     [isRecording],
   )
@@ -88,6 +127,8 @@ export default function VoiceTranslationPage() {
         setCurrentWord("")
         setAllWords([])
         setInputText("")
+        setSignAvatars({})
+        lastProcessedWordRef.current = ""
       } catch (error) {
         console.warn("Could not start recognition:", error)
       }
@@ -196,32 +237,52 @@ export default function VoiceTranslationPage() {
             )}
           </div>
 
+          {/* <CHANGE> Display all words with their sign language avatars in real-time */}
           <div className="rounded-lg bg-white p-4 md:p-6 shadow-sm">
             <h3 className="mb-4 text-base md:text-lg font-semibold text-gray-900">Sign Language Interpreter</h3>
             <div className="flex min-h-[300px] md:min-h-[400px] flex-col items-center justify-center rounded-lg bg-gradient-to-br from-purple-50 to-blue-50 p-6 md:p-8">
-              {currentWord ? (
+              {allWords.length > 0 ? (
                 <div className="flex flex-col items-center gap-6 w-full">
-                  {/* Avatar Display */}
-                  <div className="relative">
-                    <div className="h-48 w-48 md:h-64 md:w-64 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-2xl">
-                      <div className="h-44 w-44 md:h-60 md:w-60 rounded-full bg-white flex items-center justify-center">
-                        <div className="text-6xl md:text-8xl animate-bounce">🤟</div>
-                      </div>
-                    </div>
-                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg">
-                      <p className="text-sm font-medium">Interpreting...</p>
+                  {/* Display all signs in a horizontal scrollable row */}
+                  <div className="w-full overflow-x-auto pb-4">
+                    <div className="flex gap-4 min-w-min px-2">
+                      {allWords.map((word, index) => (
+                        <div key={`${word}-${index}`} className="flex flex-col items-center gap-3 flex-shrink-0">
+                          {/* Avatar for each word */}
+                          <div className="relative">
+                            <div className="h-32 w-32 md:h-40 md:w-40 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-xl">
+                              <div className="h-28 w-28 md:h-36 md:w-36 rounded-full bg-white flex items-center justify-center overflow-hidden">
+                                {signAvatars[word] ? (
+                                  <img
+                                    src={signAvatars[word] || "/placeholder.svg"}
+                                    alt={`Sign for ${word}`}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="text-4xl md:text-5xl animate-pulse">🤟</div>
+                                )}
+                              </div>
+                            </div>
+                            {index === allWords.length - 1 && isLoadingSign && (
+                              <div className="absolute -top-2 -right-2 bg-blue-500 text-white px-2 py-1 rounded-full text-xs animate-pulse">
+                                Loading...
+                              </div>
+                            )}
+                          </div>
+                          {/* Word label */}
+                          <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-md border border-blue-200">
+                            <p className="text-sm md:text-base font-semibold text-blue-600">{word}</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
-                  {/* Current Word Display */}
-                  <div className="rounded-xl bg-white/90 backdrop-blur-sm p-6 md:p-8 shadow-lg border-2 border-blue-200 w-full max-w-2xl">
+                  {/* Full Text Display */}
+                  <div className="rounded-xl bg-white/90 backdrop-blur-sm p-4 md:p-6 shadow-lg border-2 border-blue-200 w-full max-w-2xl">
                     <div className="text-center">
-                      <p className="text-xs md:text-sm text-gray-500 mb-2 uppercase tracking-wide">Current Sign</p>
-                      <p className="text-4xl md:text-6xl font-bold text-blue-600 mb-4">{currentWord}</p>
-                      <div className="border-t border-gray-200 pt-4">
-                        <p className="text-xs md:text-sm text-gray-500 mb-2 uppercase tracking-wide">Full Text</p>
-                        <p className="text-base md:text-xl text-gray-700 leading-relaxed">{inputText}</p>
-                      </div>
+                      <p className="text-xs md:text-sm text-gray-500 mb-2 uppercase tracking-wide">Full Translation</p>
+                      <p className="text-lg md:text-2xl text-gray-700 leading-relaxed">{inputText}</p>
                     </div>
                   </div>
                 </div>
@@ -230,18 +291,4 @@ export default function VoiceTranslationPage() {
                   <div className="h-48 w-48 md:h-64 md:w-64 mx-auto rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
                     <div className="text-6xl md:text-8xl opacity-50">🤟</div>
                   </div>
-                  <p className="text-sm md:text-lg text-gray-500 px-4">
-                    {isRecording
-                      ? "Listening... Instant sign language will appear"
-                      : "Click microphone to start speaking"}
-                  </p>
-                  <p className="text-xs text-gray-400">Real-time sign language interpretation</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
+                  <p className="text-sm md:text-lg text-gray-500 px-4\
