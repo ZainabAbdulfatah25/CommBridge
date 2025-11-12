@@ -14,10 +14,9 @@ export default function VoiceTranslationPage() {
   const [inputText, setInputText] = useState("")
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
-  const [isAnimating, setIsAnimating] = useState(false)
   const [currentWord, setCurrentWord] = useState("")
   const recognitionRef = useRef<any>(null)
-  const animationIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const previousTextRef = useRef("")
 
   const languageMap = useRef<Record<string, string>>({
     English: "en-US",
@@ -54,12 +53,6 @@ export default function VoiceTranslationPage() {
 
       recognitionRef.current.lang = languageMap.current[language] || "en-US"
     }
-
-    return () => {
-      if (animationIntervalRef.current) {
-        clearInterval(animationIntervalRef.current)
-      }
-    }
   }, [language])
 
   const handleLanguageChange = useCallback(
@@ -93,49 +86,26 @@ export default function VoiceTranslationPage() {
   }, [isRecording])
 
   useEffect(() => {
-    if (animationIntervalRef.current) {
-      clearInterval(animationIntervalRef.current)
-    }
-
     if (inputText && isRecording) {
-      setIsAnimating(true)
-      const words = inputText.split(" ")
-      let wordIndex = 0
+      // Get the latest word by comparing with previous text
+      const previousWords = previousTextRef.current.trim().split(" ")
+      const currentWords = inputText.trim().split(" ")
 
-      animationIntervalRef.current = setInterval(() => {
-        if (wordIndex < words.length) {
-          setCurrentWord(words[wordIndex])
-          wordIndex++
-        } else {
-          wordIndex = 0
-        }
-      }, 800)
-    } else {
-      setIsAnimating(false)
-      setCurrentWord("")
-    }
-
-    return () => {
-      if (animationIntervalRef.current) {
-        clearInterval(animationIntervalRef.current)
+      // Find the newest word
+      if (currentWords.length > previousWords.length) {
+        // New word added
+        setCurrentWord(currentWords[currentWords.length - 1])
+      } else if (currentWords.length > 0) {
+        // Word being modified (interim result)
+        setCurrentWord(currentWords[currentWords.length - 1])
       }
+
+      previousTextRef.current = inputText
+    } else if (!isRecording) {
+      setCurrentWord("")
+      previousTextRef.current = ""
     }
   }, [inputText, isRecording])
-
-  // const handleStartSpeaking = useCallback(() => {
-  //   if (isSpeaking) {
-  //     setIsSpeaking(false)
-  //     if (isRecording && recognitionRef.current) {
-  //       recognitionRef.current.stop()
-  //     }
-  //   } else {
-  //     if (!inputText.trim()) {
-  //       alert("Please type some text or use the microphone first")
-  //       return
-  //     }
-  //     setIsSpeaking(true)
-  //   }
-  // }, [isSpeaking, isRecording, inputText])
 
   return (
     <div className="h-full">
@@ -236,7 +206,7 @@ export default function VoiceTranslationPage() {
           <div className="rounded-lg bg-white p-4 md:p-6 shadow-sm">
             <h3 className="mb-4 text-base md:text-lg font-semibold text-gray-900">Sign language</h3>
             <div className="flex min-h-[300px] md:min-h-[400px] flex-col items-center justify-center rounded-lg bg-gradient-to-br from-purple-50 to-blue-50 p-6 md:p-8">
-              {isAnimating && inputText ? (
+              {currentWord && isRecording ? (
                 <div className="flex flex-col items-center gap-4 md:gap-6">
                   <div className="relative">
                     <div className="h-32 w-32 md:h-48 md:w-48 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 animate-pulse shadow-lg" />
@@ -247,10 +217,8 @@ export default function VoiceTranslationPage() {
                     </div>
                   </div>
                   <div className="text-center space-y-2">
-                    <p className="text-xl md:text-2xl font-bold text-gray-800 animate-pulse">{currentWord}</p>
-                    <p className="text-xs md:text-sm text-gray-600">
-                      {isRecording ? "Recording in" : "Signing in"} {language}
-                    </p>
+                    <p className="text-xl md:text-2xl font-bold text-gray-800">{currentWord}</p>
+                    <p className="text-xs md:text-sm text-gray-600">Recording in {language}</p>
                   </div>
                   <div className="max-w-md rounded-lg bg-white/50 p-3 md:p-4 backdrop-blur-sm">
                     <p className="text-center text-sm md:text-base text-gray-700">{inputText}</p>
@@ -268,8 +236,6 @@ export default function VoiceTranslationPage() {
               )}
             </div>
           </div>
-
-          {/* Start Speaking Button */}
         </div>
       </div>
     </div>
