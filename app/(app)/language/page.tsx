@@ -91,10 +91,9 @@ export default function VoiceTranslationPage() {
   }, [isRecording])
 
   const getSignImage = (text: string) => {
-    // Using a sign language API endpoint that returns images for letters/words
-    // This uses ASL (American Sign Language) alphabet images
-    const encoded = encodeURIComponent(text.toLowerCase())
-    return `https://www.signasl.org/sign/${encoded}`
+    const word = text.toLowerCase()
+    // Generate sign representation using ASL fingerspelling and word signs
+    return `https://www.lifeprint.com/asl101/images-signs/${word}.jpg`
   }
 
   return (
@@ -209,11 +208,20 @@ export default function VoiceTranslationPage() {
                             <div className="h-32 w-32 md:h-40 md:w-40 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-xl p-1">
                               <div className="h-full w-full rounded-full bg-white flex items-center justify-center overflow-hidden">
                                 <img
-                                  src={getSignImage(word) || "/placeholder.svg"}
+                                  src={`https://www.signasl.org/sign/${word.toLowerCase()}`}
                                   alt={`Sign for ${word}`}
                                   className="h-full w-full object-contain p-2"
                                   onError={(e) => {
-                                    e.currentTarget.src = `/placeholder.svg?height=160&width=160&text=${word[0].toUpperCase()}`
+                                    const target = e.currentTarget
+                                    // Try ASL University as fallback
+                                    if (!target.dataset.fallback) {
+                                      target.dataset.fallback = "1"
+                                      target.src = `https://www.lifeprint.com/asl101/images-signs/${word.toLowerCase()}.jpg`
+                                    } else if (target.dataset.fallback === "1") {
+                                      // Final fallback: show letter-based representation
+                                      target.dataset.fallback = "2"
+                                      target.src = `/placeholder.svg?height=160&width=160&text=${word}`
+                                    }
                                   }}
                                 />
                               </div>
