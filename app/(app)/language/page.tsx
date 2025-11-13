@@ -69,7 +69,7 @@ export default function VoiceTranslationPage() {
 
     if (inputText && isRecording) {
       setIsAnimating(true)
-      const words = inputText.split(" ").filter(Boolean)
+      const words = inputText.split(" ")
       let wordIndex = 0
 
       animationIntervalRef.current = setInterval(() => {
@@ -126,7 +126,7 @@ export default function VoiceTranslationPage() {
   }, [isRecording])
 
   return (
-    <div className="h-full">
+    <div className="h-full bg-gray-50">
       {/* Tabs */}
       <div className="border-b bg-white px-4 py-4 md:px-8 md:py-6">
         <div className="flex flex-col gap-3 md:flex-row md:gap-4">
@@ -173,11 +173,11 @@ export default function VoiceTranslationPage() {
       </div>
 
       {/* Main Content */}
-      <div className="p-4 md:p-8">
-        <div className="mx-auto max-w-4xl space-y-6">
-          {/* Language Selection and Input */}
-          <div className="rounded-lg bg-white p-4 md:p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-4">
+      <div className="flex h-[calc(100vh-180px)] items-center justify-center p-4 md:p-8">
+        <div className="w-full max-w-4xl space-y-6">
+          {/* Language Selection */}
+          <div className="rounded-lg bg-white p-6 shadow-sm">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-3 mb-4">
               <label className="text-sm font-medium text-gray-700">Select Language:</label>
               <Select value={language} onValueChange={handleLanguageChange}>
                 <SelectTrigger className="w-full md:w-[200px]">
@@ -191,64 +191,58 @@ export default function VoiceTranslationPage() {
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-sm">
-              <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></div>
-              <span className="font-medium text-blue-700">Current: {language}</span>
-            </div>
-
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
-              <input
-                type="text"
-                value={inputText}
-                onChange={(e) => {
-                  setInputText(e.target.value)
-                }}
-                className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base md:text-lg focus:border-[#3b82f6] focus:outline-hidden focus:ring-2 focus:ring-[#3b82f6]/20"
-                placeholder={`Type or speak in ${language}...`}
-              />
-              <button
-                className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full transition-all ${
-                  isRecording ? "animate-pulse bg-red-500" : "bg-[#3b82f6]"
-                } hover:opacity-90`}
-                onClick={handleMicClick}
-                title={isRecording ? "Stop recording" : "Click microphone to start speaking"}
-              >
-                <Mic className="h-6 w-6 text-white" />
-              </button>
-            </div>
-            {isRecording && (
-              <p className="mt-2 text-sm text-red-500 animate-pulse">Recording in {language}... Speak now</p>
-            )}
           </div>
 
-          <div className="rounded-lg bg-white p-4 md:p-6 shadow-sm">
-            <h3 className="mb-4 text-base md:text-lg font-semibold text-gray-900">Sign Language Interpreter</h3>
-            <div className="flex min-h-[300px] md:min-h-[400px] flex-col items-center justify-center rounded-lg bg-gradient-to-br from-purple-50 to-blue-50 p-6 md:p-8">
-              {isAnimating && inputText ? (
-                <div className="flex flex-col items-center gap-6 w-full">
-                  <div className="relative">
-                    <div className="h-40 w-40 md:h-48 md:w-48 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 animate-pulse shadow-xl" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="h-32 w-32 md:h-40 md:w-40 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center">
-                        <div className="text-5xl md:text-7xl">👋</div>
+          {/* Sign Display - Exact match to learning module */}
+          <div className="rounded-lg bg-white p-8 shadow-sm">
+            <div className="flex justify-center">
+              <div className="relative h-80 w-80 overflow-hidden rounded-lg bg-gray-100">
+                {isAnimating && inputText ? (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 p-6">
+                    <div className="relative mb-4">
+                      <div className="h-32 w-32 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 animate-pulse shadow-lg" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="h-24 w-24 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center">
+                          <div className="text-5xl">👋</div>
+                        </div>
                       </div>
                     </div>
+                    <p className="text-2xl font-bold text-gray-800 animate-pulse mb-2">{currentWord}</p>
+                    <p className="text-sm text-gray-600 text-center max-w-xs">{inputText}</p>
                   </div>
-                  <p className="text-2xl md:text-3xl font-bold text-gray-800 animate-pulse">{currentWord}</p>
-                  <div className="rounded-xl bg-white/90 backdrop-blur-sm p-4 md:p-6 shadow-lg border-2 border-blue-200 w-full max-w-2xl">
-                    <div className="text-center">
-                      <p className="text-xs md:text-sm text-gray-500 mb-2 uppercase tracking-wide">Full text:</p>
-                      <p className="text-base md:text-lg text-gray-700 leading-relaxed">{inputText}</p>
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center space-y-2">
+                      <div className="text-6xl opacity-30">🤟</div>
+                      <p className="text-sm text-gray-500">Click microphone to start speaking</p>
                     </div>
                   </div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-3 mt-8">
+              <div className="flex items-center justify-center gap-3">
+                <p className="text-sm font-medium text-gray-700">Practice Speaking:</p>
+                <button
+                  className={`flex h-12 w-12 items-center justify-center rounded-full transition-all ${
+                    isRecording ? "animate-pulse bg-red-500" : "bg-[#3b82f6]"
+                  } hover:opacity-90`}
+                  onClick={handleMicClick}
+                  title={isRecording ? "Stop recording" : "Start recording"}
+                >
+                  <Mic className="h-6 w-6 text-white" />
+                </button>
+              </div>
+              {isRecording && (
+                <div className="text-center">
+                  <p className="text-sm text-red-500 animate-pulse">🔴 Recording in {language}...</p>
                 </div>
-              ) : (
-                <div className="text-center space-y-4">
-                  <div className="h-48 w-48 md:h-64 md:w-64 mx-auto rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                    <div className="text-6xl md:text-8xl opacity-50">🤟</div>
-                  </div>
-                  <p className="text-sm md:text-lg text-gray-500 px-4">Click microphone to start speaking</p>
+              )}
+              {inputText && !isRecording && (
+                <div className="rounded-lg bg-blue-50 p-4 text-center">
+                  <p className="text-sm text-gray-600 mb-1">You said:</p>
+                  <p className="text-lg font-semibold text-gray-800">{inputText}</p>
                 </div>
               )}
             </div>
