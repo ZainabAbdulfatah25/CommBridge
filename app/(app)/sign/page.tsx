@@ -48,43 +48,40 @@ export default function SignDetectionPage() {
     }
   }, [])
 
-  const detectSign = async () => {
-    if (!videoRef.current || videoRef.current.paused || videoRef.current.ended) {
+  const detectSign = () => {
+    console.log("[v0] Detection running...")
+
+    // Simulate detection with random chance (30% detection rate)
+    if (Math.random() > 0.3) {
       return
     }
 
-    try {
-      // Simulate detection with random chance (30% detection rate)
-      if (Math.random() > 0.3) {
-        return
+    // Return a random sign with realistic confidence
+    const randomSign = commonSigns[Math.floor(Math.random() * commonSigns.length)]
+    const detectedConfidence = 0.76 + Math.random() * 0.19 // 76-95% confidence
+
+    console.log("[v0] Detected:", randomSign, "confidence:", detectedConfidence)
+
+    if (detectedConfidence > 0.75) {
+      setCurrentWord(randomSign)
+      setConfidence(detectedConfidence)
+
+      // Only add word if it's different from the last detected word
+      if (randomSign !== lastWordRef.current) {
+        lastWordRef.current = randomSign
+        setDetectedText((prev) => (prev ? `${prev} ${randomSign}` : randomSign))
+
+        // Clear current word after 2 seconds
+        setTimeout(() => {
+          setCurrentWord("")
+        }, 2000)
       }
-
-      // Return a random sign with realistic confidence
-      const randomSign = commonSigns[Math.floor(Math.random() * commonSigns.length)]
-      const detectedConfidence = 0.76 + Math.random() * 0.19 // 76-95% confidence
-
-      if (detectedConfidence > 0.75) {
-        setCurrentWord(randomSign)
-        setConfidence(detectedConfidence)
-
-        // Only add word if it's different from the last detected word
-        if (randomSign !== lastWordRef.current) {
-          lastWordRef.current = randomSign
-          setDetectedText((prev) => (prev ? `${prev} ${randomSign}` : randomSign))
-
-          // Clear current word after 2 seconds
-          setTimeout(() => {
-            setCurrentWord("")
-          }, 2000)
-        }
-      }
-    } catch (error) {
-      console.error("Sign detection error:", error)
     }
   }
 
   const handleStartDetection = async () => {
     if (isDetecting) {
+      console.log("[v0] Stopping detection...")
       setIsDetecting(false)
       if (detectionIntervalRef.current) {
         clearInterval(detectionIntervalRef.current)
@@ -100,6 +97,7 @@ export default function SignDetectionPage() {
       lastWordRef.current = ""
     } else {
       try {
+        console.log("[v0] Starting camera...")
         setCameraError(null)
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
@@ -108,20 +106,32 @@ export default function SignDetectionPage() {
             height: { ideal: 720 },
           },
         })
+        console.log("[v0] Camera stream obtained:", stream.active)
         streamRef.current = stream
+
         if (videoRef.current) {
           videoRef.current.srcObject = stream
-          await videoRef.current.play()
-        }
-        setIsDetecting(true)
-        setDetectedText("")
-        setCurrentWord("")
-        lastWordRef.current = ""
 
-        detectionIntervalRef.current = setInterval(() => {
-          detectSign()
-        }, 1000)
+          videoRef.current.onloadedmetadata = () => {
+            console.log("[v0] Video metadata loaded")
+            videoRef.current?.play()
+          }
+
+          videoRef.current.onplay = () => {
+            console.log("[v0] Video playing, starting detection")
+            setIsDetecting(true)
+            setDetectedText("")
+            setCurrentWord("")
+            lastWordRef.current = ""
+
+            // Start detection interval
+            detectionIntervalRef.current = setInterval(() => {
+              detectSign()
+            }, 1500) // Every 1.5 seconds
+          }
+        }
       } catch (error) {
+        console.error("[v0] Camera error:", error)
         if (error instanceof Error) {
           if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
             setCameraError("Camera access was denied. Please allow camera permissions and try again.")
@@ -130,12 +140,11 @@ export default function SignDetectionPage() {
           } else if (error.name === "NotReadableError") {
             setCameraError("Camera is already in use by another application.")
           } else {
-            setCameraError("Unable to access camera. Please check your permissions and try again.")
+            setCameraError(`Unable to access camera: ${error.message}`)
           }
         } else {
           setCameraError("Unable to access camera. Please check your permissions and try again.")
         }
-        console.warn("Camera access error:", error)
       }
     }
   }
@@ -210,7 +219,14 @@ export default function SignDetectionPage() {
           ) : (
             <div className="relative w-full max-w-3xl">
               <div className="relative aspect-video overflow-hidden rounded-2xl bg-gray-900 shadow-xl">
-                <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover scale-x-[-1]" />
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="h-full w-full object-cover scale-x-[-1]"
+                  key={isDetecting ? "active" : "inactive"}
+                />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   {currentWord && (
                     <div className="rounded-lg bg-green-500/90 px-6 py-3 backdrop-blur-sm animate-pulse">
