@@ -7,6 +7,7 @@ import { LayoutDashboard, Hand, Languages, GraduationCap, Settings, User, LogOut
 import Image from "next/image"
 import { createClient } from "@/lib/supabase/client"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
+import { useCallback, useTransition } from "react"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -27,14 +28,16 @@ interface AppSidebarProps {
 export function AppSidebar({ isOpen = true, onClose, user, profile }: AppSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const [isPending, startTransition] = useTransition()
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
     if (onClose) onClose()
-    router.push("/auth/login")
-    router.refresh()
-  }
+    startTransition(() => {
+      router.push("/auth/login")
+    })
+  }, [onClose, router])
 
   return (
     <>
@@ -85,10 +88,11 @@ export function AppSidebar({ isOpen = true, onClose, user, profile }: AppSidebar
         <div className="border-t border-white/10 p-3">
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-white/80 transition-colors hover:bg-white/5 hover:text-white"
+            disabled={isPending}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-white/80 transition-colors hover:bg-white/5 hover:text-white disabled:opacity-50"
           >
             <LogOut className="h-5 w-5" />
-            <span>Log Out</span>
+            <span>{isPending ? "Logging out..." : "Log Out"}</span>
           </button>
         </div>
       </div>

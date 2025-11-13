@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
 import { Globe, Lock } from "lucide-react"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import Link from "next/link"
 
@@ -46,6 +46,9 @@ export function DashboardCharts({ learningProgress, recentActivity, isPremium }:
       accuracy: activity.output_text ? "Completed" : "In Progress",
     }))
   }, [recentActivity])
+
+  const openModal = useCallback(() => setShowActivityModal(true), [])
+  const closeModal = useCallback(() => setShowActivityModal(false), [])
 
   return (
     <>
@@ -94,7 +97,7 @@ export function DashboardCharts({ learningProgress, recentActivity, isPremium }:
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-lg sm:text-xl font-bold">Recent Activity</CardTitle>
             {formattedActivity.length > 4 && (
-              <Button variant="link" className="text-sm" onClick={() => setShowActivityModal(true)}>
+              <Button variant="link" className="text-sm" onClick={openModal}>
                 view more
               </Button>
             )}
@@ -168,7 +171,7 @@ export function DashboardCharts({ learningProgress, recentActivity, isPremium }:
         </Card>
       </div>
 
-      <Dialog open={showActivityModal} onOpenChange={setShowActivityModal}>
+      <Dialog open={showActivityModal} onOpenChange={closeModal}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">All Recent Activity</DialogTitle>
