@@ -84,7 +84,7 @@ export default function SignUpPage() {
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
-            <CardDescription>Join CommBridge to start learning sign language</CardDescription>
+            <CardDescription>Start your journey to bridge communication with sign language</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSignUp}>
