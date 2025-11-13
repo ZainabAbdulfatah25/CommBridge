@@ -8,6 +8,7 @@ import { Mic } from "lucide-react"
 import Link from "next/link"
 import { PremiumLock } from "@/components/premium-lock"
 import { PremiumBadge } from "@/components/premium-badge"
+import { SignLanguageAvatar } from "@/components/sign-language-avatar"
 
 const FREE_DAILY_LIMIT = 10
 
@@ -231,17 +232,7 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
                   <h3 className="text-lg font-semibold text-gray-800">Sign Language Display</h3>
                 </div>
                 <div className="flex flex-col items-center gap-4">
-                  <div className="relative h-64 w-64 rounded-lg bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center overflow-hidden">
-                    <div className="text-center animate-pulse">
-                      <div className="text-7xl mb-2">🤟</div>
-                      <div className="bg-white/80 backdrop-blur-sm rounded-lg px-4 py-2 mx-4">
-                        <p className="text-2xl font-bold text-gray-800">{currentWord}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="w-full rounded-lg bg-gray-50 p-4">
-                    <p className="text-center text-gray-700">{inputText}</p>
-                  </div>
+                  <SignLanguageAvatar currentWord={currentWord} fullText={inputText} isAnimating={true} />
                 </div>
               </div>
             )}

@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress"
 import { useRouter, useParams } from "next/navigation"
 import { ArrowLeft, Volume2, Mic } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
+import { SignLanguageAvatar } from "@/components/sign-language-avatar"
 
 type LessonContent = {
   word: string
@@ -544,39 +545,26 @@ export default function LessonModulePage() {
               </div>
 
               <div className="flex justify-center">
-                <div className="relative h-80 w-80 overflow-hidden rounded-lg bg-gray-100">
-                  {isAnimating && spokenText ? (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 p-6">
-                      <div className="relative mb-4">
-                        <div className="h-32 w-32 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 animate-pulse shadow-lg" />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="h-24 w-24 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center">
-                            <div className="text-5xl">👋</div>
-                          </div>
-                        </div>
+                {isAnimating && spokenText ? (
+                  <SignLanguageAvatar currentWord={currentWord} fullText={spokenText} isAnimating={true} />
+                ) : (
+                  <div className="relative h-80 w-80 overflow-hidden rounded-lg bg-gray-100">
+                    {!imageLoaded && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-[#3b82f6]" />
                       </div>
-                      <p className="text-2xl font-bold text-gray-800 animate-pulse mb-2">{currentWord}</p>
-                      <p className="text-sm text-gray-600 text-center max-w-xs">{spokenText}</p>
-                    </div>
-                  ) : (
-                    <>
-                      {!imageLoaded && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-[#3b82f6]" />
-                        </div>
-                      )}
-                      <img
-                        src={currentLessonData.imageUrl || "/placeholder.svg"}
-                        alt={currentLessonData.word}
-                        className={`h-full w-full object-cover transition-opacity duration-300 ${
-                          imageLoaded ? "opacity-100" : "opacity-0"
-                        }`}
-                        onLoad={() => setImageLoaded(true)}
-                        loading="lazy"
-                      />
-                    </>
-                  )}
-                </div>
+                    )}
+                    <img
+                      src={currentLessonData.imageUrl || "/placeholder.svg"}
+                      alt={currentLessonData.word}
+                      className={`h-full w-full object-cover transition-opacity duration-300 ${
+                        imageLoaded ? "opacity-100" : "opacity-0"
+                      }`}
+                      onLoad={() => setImageLoaded(true)}
+                      loading="lazy"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="space-y-3">

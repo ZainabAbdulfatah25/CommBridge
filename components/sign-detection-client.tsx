@@ -3,10 +3,11 @@
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Camera, Volume2, SwitchCamera } from "lucide-react"
+import { Camera, SwitchCamera } from "lucide-react"
 import Link from "next/link"
 import { PremiumLock } from "@/components/premium-lock"
 import { PremiumBadge } from "@/components/premium-badge"
+import { SignLanguageAvatar } from "@/components/sign-language-avatar"
 
 const commonSigns = ["Hello", "Thanks", "Yes", "No", "Please", "Help", "Good"]
 
@@ -210,24 +211,32 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
             <div className="grid gap-6 lg:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Text Output</CardTitle>
+                  <CardTitle>Sign Language Display</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="min-h-[200px] rounded-lg bg-gray-100 p-6">
-                    <p className="text-gray-800">{detectedText || "Start signing to see detected text..."}</p>
+                  <div className="flex justify-center">
+                    {detectedText ? (
+                      <SignLanguageAvatar
+                        currentWord={detectedText.split(" ").slice(-1)[0] || ""}
+                        fullText={detectedText}
+                        isAnimating={isDetecting}
+                      />
+                    ) : (
+                      <div className="min-h-[256px] rounded-lg bg-gray-100 p-6 flex items-center justify-center">
+                        <p className="text-gray-500">Start signing to see avatar display...</p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Audio Output</CardTitle>
+                  <CardTitle>Text Output</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex min-h-[200px] items-center justify-center rounded-lg bg-gray-100">
-                    <button className="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-lg">
-                      <Volume2 className="h-8 w-8 text-gray-600" />
-                    </button>
+                  <div className="min-h-[256px] rounded-lg bg-gray-100 p-6">
+                    <p className="text-gray-800">{detectedText || "Start signing to see detected text..."}</p>
                   </div>
                 </CardContent>
               </Card>
