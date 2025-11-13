@@ -14,15 +14,11 @@ export default function SignDetectionPage() {
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user")
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
+  const detectionIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const startCamera = async () => {
     try {
       console.log("[v0] Start button clicked, requesting camera access")
-      console.log("[v0] Getting user media with constraints:", {
-        video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: false,
-      })
-
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false,
@@ -33,15 +29,14 @@ export default function SignDetectionPage() {
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream
-        console.log("[v0] Stream assigned to video element")
 
-        // Wait for video to load metadata
         videoRef.current.onloadedmetadata = () => {
           console.log("[v0] Video metadata loaded")
           videoRef.current
             ?.play()
             .then(() => {
               console.log("[v0] Video playing successfully")
+              startDetection()
             })
             .catch((err) => {
               console.error("[v0] Error playing video:", err)
@@ -55,8 +50,29 @@ export default function SignDetectionPage() {
     }
   }
 
+  const startDetection = () => {
+    console.log("[v0] Starting sign detection simulation")
+    detectionIntervalRef.current = setInterval(() => {
+      // Simulate detecting a random sign
+      const randomSign = commonSigns[Math.floor(Math.random() * commonSigns.length)]
+      const confidence = (Math.random() * 30 + 70).toFixed(1) // 70-100% confidence
+
+      setDetectedText((prev) => {
+        const newText = prev ? `${prev} ${randomSign}` : randomSign
+        console.log("[v0] Detected sign:", randomSign, "Confidence:", confidence + "%")
+        return newText
+      })
+    }, 2000) // Detect every 2 seconds
+  }
+
   const stopCamera = () => {
     console.log("[v0] Stopping camera and detection")
+
+    if (detectionIntervalRef.current) {
+      clearInterval(detectionIntervalRef.current)
+      detectionIntervalRef.current = null
+    }
+
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => {
         console.log("[v0] Stopped track:", track.kind)
@@ -89,6 +105,9 @@ export default function SignDetectionPage() {
     return () => {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop())
+      }
+      if (detectionIntervalRef.current) {
+        clearInterval(detectionIntervalRef.current)
       }
     }
   }, [])
