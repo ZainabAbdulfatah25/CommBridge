@@ -452,6 +452,25 @@ export default function LessonModulePage() {
     }
   }, [currentLesson])
 
+  const saveProgress = async () => {
+    try {
+      const progressPercentage = Math.round(((currentLesson + 1) / moduleContent.lessons.length) * 100)
+      const isCompleted = currentLesson === moduleContent.lessons.length - 1
+
+      await fetch("/api/learning/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          moduleName: module,
+          progressPercentage,
+          completed: isCompleted,
+        }),
+      })
+    } catch (error) {
+      console.error("Error saving progress:", error)
+    }
+  }
+
   if (!moduleContent) {
     return null
   }
@@ -471,6 +490,8 @@ export default function LessonModulePage() {
       setCompleted([...completed, currentLesson])
       setCurrentLesson(currentLesson + 1)
       setShowAnswer(false)
+
+      saveProgress()
     } else {
       completeLesson(module, currentLesson)
       addActivity({
@@ -483,6 +504,9 @@ export default function LessonModulePage() {
         time: "Just now",
         accuracy: "12 lessons completed",
       })
+
+      saveProgress()
+
       startTransition(() => {
         router.push("/learning")
       })

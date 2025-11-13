@@ -5,7 +5,8 @@ import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { LayoutDashboard, Hand, Languages, GraduationCap, Settings, User, LogOut, X } from "lucide-react"
 import Image from "next/image"
-import { useUser } from "@/contexts/user-context"
+import { createClient } from "@/lib/supabase/client"
+import type { User as SupabaseUser } from "@supabase/supabase-js"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -19,17 +20,20 @@ const navigation = [
 interface AppSidebarProps {
   isOpen?: boolean
   onClose?: () => void
+  user: SupabaseUser
+  profile: any
 }
 
-export function AppSidebar({ isOpen = true, onClose }: AppSidebarProps) {
+export function AppSidebar({ isOpen = true, onClose, user, profile }: AppSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const { logout } = useUser()
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
     if (onClose) onClose()
-    router.push("/")
+    router.push("/auth/login")
+    router.refresh()
   }
 
   return (
