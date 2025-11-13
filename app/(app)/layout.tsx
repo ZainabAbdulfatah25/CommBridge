@@ -31,7 +31,9 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <AppSidebar user={user} profile={profile} />
+      <div className="hidden lg:block">
+        <AppSidebar user={user} profile={profile} />
+      </div>
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <MobileHeader user={user} profile={profile} />

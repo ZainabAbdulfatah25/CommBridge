@@ -41,12 +41,12 @@ export function AppSidebar({ isOpen = true, onClose, user, profile }: AppSidebar
 
   return (
     <>
-      {isOpen && <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={onClose} />}
+      {isOpen && onClose && <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={onClose} />}
 
       <div
         className={cn(
           "fixed lg:relative inset-y-0 left-0 z-50 flex h-screen w-[190px] flex-col bg-[#3b82f6] text-white transition-transform duration-300 lg:translate-x-0",
-          isOpen ? "translate-x-0" : "-translate-x-full",
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
         {/* Logo */}
@@ -57,9 +57,11 @@ export function AppSidebar({ isOpen = true, onClose, user, profile }: AppSidebar
             </div>
             <span className="text-lg font-semibold">CommBridge</span>
           </div>
-          <button onClick={onClose} className="lg:hidden">
-            <X className="h-6 w-6" />
-          </button>
+          {onClose && (
+            <button onClick={onClose} className="lg:hidden hover:bg-white/10 rounded p-1 transition-colors">
+              <X className="h-6 w-6" />
+            </button>
+          )}
         </div>
 
         {/* Navigation */}
