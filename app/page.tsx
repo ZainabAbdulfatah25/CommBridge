@@ -38,7 +38,7 @@ export default function Home() {
               variant="outline"
               className="w-full h-11 bg-white border-2 border-[#3b82f6] text-[#3b82f6] hover:bg-gray-50 text-base font-medium rounded-xl"
             >
-              Sign In
+              Learn More
             </Button>
           </Link>
         </div>
