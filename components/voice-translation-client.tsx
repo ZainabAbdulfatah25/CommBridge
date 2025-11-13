@@ -7,6 +7,7 @@ import { Mic } from "lucide-react"
 import { PremiumLock } from "@/components/premium-lock"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
+import { FeatureNavTabs } from "@/components/feature-nav-tabs"
 
 const FREE_DAILY_LIMIT = 10
 
@@ -95,6 +96,8 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
 
   return (
     <div className="h-full bg-gray-50">
+      <FeatureNavTabs />
+
       {/* Header with tabs */}
       <div className="border-b bg-white px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between gap-4">
@@ -108,14 +111,14 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
       </div>
 
       {/* Main Content */}
-      <div className="flex h-[calc(100vh-180px)] items-center justify-center p-4 sm:p-6 lg:p-8">
+      <div className="flex h-[calc(100vh-280px)] items-center justify-center p-4 sm:p-6 lg:p-8">
         {hasReachedLimit ? (
           <PremiumLock
             feature="Unlimited Translations"
             description={`You've reached your daily limit of ${FREE_DAILY_LIMIT} translations. Upgrade to Premium for unlimited access.`}
           />
         ) : (
-          <div className="w-full max-w-2xl space-y-6">
+          <div className="w-full max-w-3xl space-y-6">
             {/* Language Selection */}
             <div className="rounded-lg bg-white p-4 sm:p-6 shadow-sm">
               <div className="mb-4 flex items-center gap-3">
@@ -161,7 +164,6 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
               </div>
             </div>
 
-            {/* Sign Display Section */}
             {inputText && (
               <div className="rounded-lg bg-white p-4 sm:p-8 shadow-sm">
                 <div className="mb-6 flex items-center justify-between">
@@ -187,6 +189,11 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
                       alt="Sign language display"
                       className="h-full w-full object-cover"
                     />
+                    <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2">
+                      <p className="text-center font-semibold text-gray-800 text-sm sm:text-base">
+                        {spokenText.split(" ").slice(-1)[0] || inputText.split(" ").slice(-1)[0]}
+                      </p>
+                    </div>
                   </div>
                 </div>
                 <div className="mt-4 text-center">

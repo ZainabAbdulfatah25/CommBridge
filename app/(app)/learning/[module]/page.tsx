@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress"
 import { useRouter, useParams } from "next/navigation"
 import { ArrowLeft, Volume2, Mic } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
+import { FeatureNavTabs } from "@/components/feature-nav-tabs"
 
 type LessonContent = {
   word: string
@@ -466,6 +467,8 @@ export default function LessonModulePage() {
 
   return (
     <div className="h-full bg-gray-50">
+      <FeatureNavTabs />
+
       <div className="border-b bg-white px-4 sm:px-6 lg:px-8 py-4">
         <h1 className="text-lg font-semibold text-gray-900">Learning Module</h1>
       </div>
@@ -493,7 +496,7 @@ export default function LessonModulePage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex h-[calc(100vh-200px)] items-center justify-center p-4 sm:p-6 lg:p-8">
+      <div className="flex h-[calc(100vh-280px)] items-center justify-center p-4 sm:p-6 lg:p-8">
         <Card className="w-full max-w-3xl">
           <CardContent className="p-6 sm:p-8 lg:p-12">
             <div className="space-y-6 sm:space-y-8">

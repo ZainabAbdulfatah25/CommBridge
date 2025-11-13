@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Camera, SwitchCamera, Lock, ArrowLeft } from "lucide-react"
 import { PremiumLock } from "@/components/premium-lock"
 import { PremiumBadge } from "@/components/premium-badge"
+import { FeatureNavTabs } from "@/components/feature-nav-tabs"
 
 const commonSigns = ["Hello", "Thanks", "Yes", "No", "Please", "Help", "Good"]
 const FREE_DAILY_LIMIT = 5
@@ -124,6 +125,8 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
 
   return (
     <div className="h-full bg-gray-50">
+      <FeatureNavTabs />
+
       {/* Header */}
       <div className="border-b bg-white px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-center justify-between gap-4">
