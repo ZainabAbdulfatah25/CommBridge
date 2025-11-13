@@ -5,8 +5,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { useAuth } from "@/contexts/auth-context"
 import { createBrowserClient } from "@/lib/supabase/client"
 import Link from "next/link"
-import { CheckCircle } from "lucide-react"
+import { CheckCircle, Lock } from "lucide-react"
 import { useEffect, useState } from "react"
+import { PremiumBadge } from "@/components/premium-badge"
 
 const learningModules = [
   { id: 1, title: "Basics", lessons: 12, slug: "basics" },
@@ -16,7 +17,7 @@ const learningModules = [
 ]
 
 export default function LearningPage() {
-  const { user } = useAuth()
+  const { user, isPremium } = useAuth()
   const [progressMap, setProgressMap] = useState(new Map())
   const [loading, setLoading] = useState(true)
   const supabase = createBrowserClient()
@@ -68,6 +69,8 @@ export default function LearningPage() {
               const progress = progressMap.get(module.slug)
               const isCompleted = progress?.completed || false
               const progressPercentage = progress?.progress_percentage || 0
+              const isPremiumModule = module.slug === "advanced"
+              const canAccess = !isPremiumModule || isPremium
 
               return (
                 <Card key={module.id} className="overflow-hidden">
@@ -76,6 +79,7 @@ export default function LearningPage() {
                       <div className="flex items-center gap-2 mb-2">
                         <h3 className="text-xl sm:text-2xl font-bold text-gray-900">{module.title}</h3>
                         {isCompleted && <CheckCircle className="h-6 w-6 text-green-500" />}
+                        {isPremiumModule && <PremiumBadge size="sm" />}
                       </div>
                       <p className="text-base sm:text-lg text-gray-500 mb-2">{module.lessons} Lessons</p>
                       {progressPercentage > 0 && (
@@ -91,13 +95,26 @@ export default function LearningPage() {
                       )}
                     </div>
                     <Button
-                      asChild
+                      asChild={canAccess}
+                      disabled={!canAccess}
                       size="lg"
-                      className="bg-[#3b82f6] px-8 sm:px-12 hover:bg-[#2563eb] text-white w-full sm:w-auto"
+                      className={
+                        canAccess
+                          ? "bg-[#3b82f6] px-8 sm:px-12 hover:bg-[#2563eb] text-white w-full sm:w-auto"
+                          : "w-full sm:w-auto"
+                      }
+                      onClick={() => !canAccess && (window.location.href = "/settings/premium")}
                     >
-                      <Link href={`/learning/${module.slug}`}>
-                        {isCompleted ? "Review" : progressPercentage > 0 ? "Continue" : "Start"}
-                      </Link>
+                      {canAccess ? (
+                        <Link href={`/learning/${module.slug}`}>
+                          {isCompleted ? "Review" : progressPercentage > 0 ? "Continue" : "Start"}
+                        </Link>
+                      ) : (
+                        <span className="flex items-center gap-2">
+                          <Lock className="h-4 w-4" />
+                          Unlock Premium
+                        </span>
+                      )}
                     </Button>
                   </CardContent>
                 </Card>

@@ -3,8 +3,9 @@
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Camera, SwitchCamera } from "lucide-react"
+import { Camera, SwitchCamera, Lock } from "lucide-react"
 import { PremiumLock } from "@/components/premium-lock"
+import { PremiumBadge } from "@/components/premium-badge"
 
 const commonSigns = ["Hello", "Thanks", "Yes", "No", "Please", "Help", "Good"]
 const FREE_DAILY_LIMIT = 5
@@ -121,7 +122,10 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
       {/* Header */}
       <div className="border-b bg-white px-8 py-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Sign Detection</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-gray-900">Sign Detection</h1>
+            {isPremium && <PremiumBadge size="md" />}
+          </div>
           {!isPremium && (
             <div className="text-sm text-gray-600">
               Daily detections: {detectionCount} / {FREE_DAILY_LIMIT}
@@ -198,7 +202,8 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
                         />
                       </div>
                     ) : (
-                      <div className="min-h-[256px] rounded-lg bg-gray-100 p-6 flex items-center justify-center">
+                      <div className="min-h-[256px] rounded-lg bg-gray-100 p-6 flex items-center justify-center flex-col gap-3">
+                        <Camera className="h-8 w-8 text-gray-400" />
                         <p className="text-gray-500">Start signing to see display...</p>
                       </div>
                     )}
@@ -216,8 +221,15 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
                   <CardTitle>Text Output</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="min-h-[256px] rounded-lg bg-gray-100 p-6">
-                    <p className="text-gray-800">{detectedText || "Start signing to see detected text..."}</p>
+                  <div className="min-h-[256px] rounded-lg bg-gray-100 p-6 flex items-center justify-center">
+                    {detectedText ? (
+                      <p className="text-gray-800">{detectedText}</p>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2">
+                        <Lock className="h-5 w-5 text-gray-400" />
+                        <p className="text-gray-500">Detected text will appear here...</p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
