@@ -127,14 +127,14 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
       <FeatureNavTabs />
 
       {/* Header */}
-      <div className="bg-white border-b px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">Sign to Text</h1>
+      <div className="bg-white border-b px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Sign to Text</h1>
             {isPremium && <PremiumBadge size="md" />}
           </div>
           {!isPremium && (
-            <div className="text-xs sm:text-sm text-gray-600">
+            <div className="text-xs text-gray-600">
               Daily: {detectionCount} / {FREE_DAILY_LIMIT}
             </div>
           )}
@@ -142,7 +142,7 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
+      <div className="flex-1 overflow-auto p-3 sm:p-4 lg:p-6">
         <div className="max-w-6xl mx-auto">
           {hasReachedLimit ? (
             <PremiumLock
@@ -150,18 +150,18 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
               description={`You've reached your daily limit of ${FREE_DAILY_LIMIT} detections. Upgrade to Premium for unlimited access.`}
             />
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-5">
               {/* Camera Section */}
-              <div className="rounded-lg bg-white p-6 sm:p-8 shadow-sm">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Start Recording</h2>
-                <div className="flex flex-col items-center justify-center space-y-6 py-8">
+              <div className="rounded-lg bg-white p-4 sm:p-5 shadow-sm">
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">Start Recording</h2>
+                <div className="flex flex-col items-center justify-center space-y-4 py-6 sm:py-8">
                   {!isDetecting ? (
-                    <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-gray-300">
-                      <Camera className="h-12 w-12 text-gray-400" />
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-gray-300">
+                      <Camera className="h-10 w-10 text-gray-400" />
                     </div>
                   ) : (
-                    <div className="relative w-full max-w-2xl">
-                      <div className="relative aspect-video overflow-hidden rounded-2xl bg-gray-900">
+                    <div className="relative w-full max-w-xl">
+                      <div className="relative aspect-video overflow-hidden rounded-lg bg-gray-900">
                         <video
                           ref={videoRef}
                           autoPlay
@@ -170,14 +170,14 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
                           className="h-full w-full object-cover"
                           style={{ transform: "scaleX(-1)" }}
                         />
-                        <div className="absolute top-4 right-4">
+                        <div className="absolute top-2 right-2">
                           <Button
-                            size="icon"
+                            size="sm"
                             variant="secondary"
-                            className="rounded-full bg-white/90"
+                            className="rounded-full bg-white/90 h-8 w-8 p-0"
                             onClick={switchCamera}
                           >
-                            <SwitchCamera className="h-5 w-5" />
+                            <SwitchCamera className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
@@ -185,12 +185,8 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
                   )}
 
                   <Button
-                    size="lg"
-                    className={
-                      isDetecting
-                        ? "bg-red-500 hover:bg-red-600 w-full sm:w-auto"
-                        : "bg-[#3b82f6] hover:bg-[#2563eb] w-full sm:w-auto"
-                    }
+                    size="sm"
+                    className={isDetecting ? "bg-red-500 hover:bg-red-600" : "bg-[#3b82f6] hover:bg-[#2563eb]"}
                     onClick={handleToggle}
                   >
                     {isDetecting ? "Stop Recording" : "Start Recording"}
@@ -200,25 +196,25 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
 
               {/* Output Sections */}
               {detectedText && (
-                <div className="grid gap-6 lg:grid-cols-2">
+                <div className="grid gap-4 lg:grid-cols-2">
                   {/* Sign Language Display */}
-                  <div className="rounded-lg bg-white p-6 sm:p-8 shadow-sm">
-                    <div className="mb-4 flex items-center justify-between">
-                      <h2 className="text-lg font-semibold text-gray-900">Sign Language Display</h2>
-                      <Button variant="ghost" size="sm" onClick={handleBack} className="gap-2">
-                        <ArrowLeft className="h-4 w-4" />
+                  <div className="rounded-lg bg-white p-4 sm:p-5 shadow-sm">
+                    <div className="mb-3 flex items-center justify-between gap-2">
+                      <h2 className="text-base sm:text-lg font-semibold text-gray-900">Sign Display</h2>
+                      <Button variant="ghost" size="sm" onClick={handleBack} className="gap-1 h-8 text-xs">
+                        <ArrowLeft className="h-3 w-3" />
                         Back
                       </Button>
                     </div>
                     <div className="flex justify-center">
-                      <div className="relative h-64 w-64 sm:h-80 sm:w-80 overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
+                      <div className="relative h-52 w-52 sm:h-64 sm:w-64 overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
                         <img
                           src="/sign-language-interpreter-showing-signs.jpg"
                           alt="Sign language display"
                           className="h-full w-full object-cover"
                         />
-                        <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2">
-                          <p className="text-center font-semibold text-gray-800 text-sm sm:text-base">
+                        <div className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-sm rounded px-2 py-1">
+                          <p className="text-center font-semibold text-gray-800 text-xs sm:text-sm">
                             {detectedText.split(" ").slice(-1)[0]}
                           </p>
                         </div>
@@ -227,10 +223,12 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
                   </div>
 
                   {/* Text Output */}
-                  <div className="rounded-lg bg-white p-6 sm:p-8 shadow-sm">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Text Output</h2>
-                    <div className="min-h-[256px] rounded-lg bg-blue-50 p-6 flex items-center justify-center">
-                      <p className="text-base sm:text-lg text-gray-800 text-center font-semibold">{detectedText}</p>
+                  <div className="rounded-lg bg-white p-4 sm:p-5 shadow-sm">
+                    <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">Text Output</h2>
+                    <div className="min-h-52 rounded-lg bg-blue-50 p-4 flex items-center justify-center">
+                      <p className="text-sm sm:text-base text-gray-800 text-center font-semibold line-clamp-5">
+                        {detectedText}
+                      </p>
                     </div>
                   </div>
                 </div>

@@ -469,65 +469,66 @@ export default function LessonModulePage() {
     <div className="h-full w-full flex flex-col bg-gray-50">
       <FeatureNavTabs />
 
-      <div className="bg-white border-b px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="max-w-6xl mx-auto space-y-4">
-          <div className="flex items-center justify-between gap-4">
+      <div className="bg-white border-b px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+        <div className="max-w-6xl mx-auto space-y-2">
+          <div className="flex items-center justify-between gap-2">
             <Button
               variant="ghost"
               onClick={() => startTransition(() => router.push("/learning"))}
-              className="gap-2"
+              className="gap-1 h-8 text-xs"
+              size="sm"
               disabled={isPending}
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-3 w-3" />
               Back
             </Button>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 flex-1 text-center">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 flex-1 text-center">
               {moduleContent?.title}
             </h1>
-            <div className="text-sm text-gray-600 hidden sm:block w-32 text-right">
+            <div className="text-xs text-gray-600 hidden sm:block w-28 text-right">
               Lesson {currentLesson + 1} / {moduleContent?.lessons.length}
             </div>
           </div>
           <div className="w-full">
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} className="h-1.5" />
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
+      <div className="flex-1 overflow-auto p-3 sm:p-4 lg:p-6">
         <div className="max-w-6xl mx-auto">
           <Card className="w-full">
-            <CardContent className="p-6 sm:p-8 lg:p-10">
-              <div className="space-y-6 sm:space-y-8">
+            <CardContent className="p-4 sm:p-5 lg:p-6">
+              <div className="space-y-4 sm:space-y-5">
                 {/* Lesson Word */}
                 <div className="text-center">
-                  <div className="mb-4 flex items-center justify-center gap-4">
-                    <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">{currentLessonData.word}</h2>
-                    <Button variant="ghost" size="icon" onClick={playAudio} className="rounded-full">
-                      <Volume2 className="h-6 w-6 text-[#3b82f6]" />
+                  <div className="mb-2 flex items-center justify-center gap-2">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">{currentLessonData.word}</h2>
+                    <Button variant="ghost" size="icon" onClick={playAudio} className="rounded-full h-8 w-8">
+                      <Volume2 className="h-5 w-5 text-[#3b82f6]" />
                     </Button>
                   </div>
-                  <p className="text-base sm:text-lg text-gray-600">{currentLessonData.translation}</p>
+                  <p className="text-sm sm:text-base text-gray-600">{currentLessonData.translation}</p>
                 </div>
 
                 <div className="flex justify-center">
                   {spokenText ? (
-                    <div className="relative h-64 w-64 sm:h-80 sm:w-80 overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
+                    <div className="relative h-48 w-48 sm:h-56 sm:w-56 overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
                       <img
                         src="/sign-language-interpreter-displaying-words.jpg"
                         alt="Sign language display"
                         className="h-full w-full object-cover"
                       />
-                      <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2">
-                        <p className="text-center font-semibold text-gray-800 text-sm sm:text-base">{spokenText}</p>
+                      <div className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-sm rounded px-2 py-1">
+                        <p className="text-center font-semibold text-gray-800 text-xs sm:text-sm">{spokenText}</p>
                       </div>
                     </div>
                   ) : (
-                    <div className="relative h-64 w-64 sm:h-80 sm:w-80 overflow-hidden rounded-lg bg-gray-100">
+                    <div className="relative h-48 w-48 sm:h-56 sm:w-56 overflow-hidden rounded-lg bg-gray-100">
                       {!imageLoaded && (
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-[#3b82f6]" />
+                          <div className="h-8 w-8 animate-spin rounded-full border-3 border-gray-300 border-t-[#3b82f6]" />
                         </div>
                       )}
                       <img
@@ -543,30 +544,30 @@ export default function LessonModulePage() {
                   )}
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center justify-center gap-3">
-                    <p className="text-sm font-medium text-gray-700">Practice Speaking:</p>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-center gap-2">
+                    <p className="text-xs sm:text-sm font-medium text-gray-700">Practice Speaking:</p>
                     <button
-                      className={`flex h-12 w-12 items-center justify-center rounded-full transition-all ${
+                      className={`flex h-10 w-10 items-center justify-center rounded-full transition-all flex-shrink-0 ${
                         isRecording ? "animate-pulse bg-red-500" : "bg-[#3b82f6]"
                       } hover:opacity-90`}
                       onClick={handleMicClick}
                       title={isRecording ? "Stop recording" : "Start recording"}
                     >
-                      <Mic className="h-6 w-6 text-white" />
+                      <Mic className="h-5 w-5 text-white" />
                     </button>
                   </div>
                   {isRecording && (
                     <div className="text-center">
-                      <p className="text-sm text-red-500 animate-pulse">
+                      <p className="text-xs text-red-500 animate-pulse">
                         🔴 Recording... Say "{currentLessonData.word}"
                       </p>
                     </div>
                   )}
                   {spokenText && !isRecording && (
-                    <div className="rounded-lg bg-blue-50 p-4 text-center">
-                      <p className="text-sm text-gray-600 mb-1">You said:</p>
-                      <p className="text-base sm:text-lg font-semibold text-gray-800">{spokenText}</p>
+                    <div className="rounded-lg bg-blue-50 p-2 text-center">
+                      <p className="text-xs text-gray-600 mb-0.5">You said:</p>
+                      <p className="text-sm font-semibold text-gray-800">{spokenText}</p>
                     </div>
                   )}
                 </div>
@@ -574,27 +575,37 @@ export default function LessonModulePage() {
                 {/* Show Answer Button */}
                 {!showAnswer ? (
                   <div className="text-center">
-                    <Button onClick={() => setShowAnswer(true)} className="bg-[#3b82f6] hover:bg-[#2563eb]">
+                    <Button
+                      onClick={() => setShowAnswer(true)}
+                      size="sm"
+                      className="bg-[#3b82f6] hover:bg-[#2563eb] text-xs"
+                    >
                       Show Instructions
                     </Button>
                   </div>
                 ) : (
-                  <div className="rounded-lg bg-blue-50 p-6 text-center">
-                    <p className="text-base sm:text-lg text-gray-800">{currentLessonData.description}</p>
+                  <div className="rounded-lg bg-blue-50 p-3 text-center">
+                    <p className="text-sm text-gray-800">{currentLessonData.description}</p>
                   </div>
                 )}
 
                 {/* Navigation Buttons */}
-                <div className="flex gap-4 pt-4 justify-center sm:justify-between">
+                <div className="flex gap-2 pt-2 justify-center sm:justify-between">
                   <Button
                     variant="outline"
                     onClick={handlePrevious}
                     disabled={currentLesson === 0}
-                    className="w-32 bg-transparent"
+                    className="w-24 sm:w-32 bg-transparent text-xs sm:text-sm h-8"
+                    size="sm"
                   >
                     Previous
                   </Button>
-                  <Button onClick={handleNext} className="w-32 bg-[#3b82f6] hover:bg-[#2563eb]" disabled={isPending}>
+                  <Button
+                    onClick={handleNext}
+                    className="w-24 sm:w-32 bg-[#3b82f6] hover:bg-[#2563eb] text-xs sm:text-sm h-8"
+                    size="sm"
+                    disabled={isPending}
+                  >
                     {currentLesson === moduleContent.lessons.length - 1 ? "Finish" : "Next"}
                   </Button>
                 </div>

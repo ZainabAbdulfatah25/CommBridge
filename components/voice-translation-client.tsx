@@ -98,21 +98,21 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
     <div className="h-full w-full flex flex-col bg-gray-50">
       <FeatureNavTabs />
 
-      <div className="bg-white border-b px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="max-w-6xl mx-auto space-y-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">Voice to Text</h1>
+      <div className="bg-white border-b px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+        <div className="max-w-6xl mx-auto space-y-2 sm:space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Voice to Text</h1>
             {!isPremium && (
-              <div className="text-xs sm:text-sm text-gray-600">
+              <div className="text-xs text-gray-600">
                 Daily: {translationCount} / {FREE_DAILY_LIMIT}
               </div>
             )}
           </div>
 
-          <div className="flex items-center gap-3">
-            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Select Language:</label>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <label className="text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">Language:</label>
             <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger className="w-[180px] sm:w-[220px]">
+              <SelectTrigger className="w-32 sm:w-40 h-8">
                 <SelectValue placeholder="Select language" />
               </SelectTrigger>
               <SelectContent>
@@ -127,7 +127,7 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
+      <div className="flex-1 overflow-auto p-3 sm:p-4 lg:p-6">
         <div className="max-w-6xl mx-auto">
           {hasReachedLimit ? (
             <PremiumLock
@@ -135,63 +135,63 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
               description={`You've reached your daily limit of ${FREE_DAILY_LIMIT} translations. Upgrade to Premium for unlimited access.`}
             />
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-5">
               {/* Input Section - Voice to Text */}
-              <div className="rounded-lg bg-white p-6 sm:p-8 shadow-sm">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Record Translation</h2>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-white p-4 sm:p-5 shadow-sm">
+                <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">Record Translation</h2>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
                     <Input
                       type="text"
                       placeholder={`Type or speak in ${language}...`}
                       value={inputText}
                       onChange={(e) => setInputText(e.target.value)}
-                      className="flex-1"
+                      className="flex-1 h-9 text-sm"
                     />
                     <button
-                      className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
+                      className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors flex-shrink-0 ${
                         isListening ? "bg-red-500 hover:bg-red-600 animate-pulse" : "bg-[#3b82f6] hover:bg-[#2563eb]"
                       }`}
                       onClick={toggleListening}
                       title={isListening ? "Stop listening" : "Click microphone to speak"}
                     >
-                      <Mic className="h-5 w-5 text-white" />
+                      <Mic className="h-4 w-4 text-white" />
                     </button>
                   </div>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs text-gray-500">
                     {isListening ? `🎤 Listening in ${language}...` : "Click microphone to start speaking"}
                   </p>
                 </div>
               </div>
 
               {inputText && (
-                <div className="rounded-lg bg-white p-6 sm:p-8 shadow-sm">
-                  <div className="mb-6 flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-gray-900">Sign Language Display</h2>
+                <div className="rounded-lg bg-white p-4 sm:p-5 shadow-sm">
+                  <div className="mb-4 flex items-center justify-between gap-2">
+                    <h2 className="text-base sm:text-lg font-semibold text-gray-900">Sign Language Display</h2>
                     <Button
                       variant="ghost"
                       onClick={() => {
                         setInputText("")
                         setSpokenText("")
                       }}
-                      className="gap-2"
+                      className="gap-1 h-8 text-xs"
                       size="sm"
                     >
-                      <ArrowLeft className="h-4 w-4" />
+                      <ArrowLeft className="h-3 w-3" />
                       Back
                     </Button>
                   </div>
 
                   {/* Real-time sign display */}
                   <div className="flex justify-center">
-                    <div className="relative h-64 w-64 sm:h-80 sm:w-80 overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
+                    <div className="relative h-52 w-52 sm:h-64 sm:w-64 overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
                       <img
                         src="/sign-language-interpreter-displaying-words.jpg"
                         alt="Sign language display"
                         className="h-full w-full object-cover"
                       />
-                      <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2">
-                        <p className="text-center font-semibold text-gray-800 text-sm sm:text-base">
+                      <div className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-sm rounded px-2 py-1">
+                        <p className="text-center font-semibold text-gray-800 text-xs sm:text-sm">
                           {spokenText.split(" ").slice(-1)[0] || inputText.split(" ").slice(-1)[0]}
                         </p>
                       </div>
@@ -199,8 +199,10 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
                   </div>
 
                   {/* Full text output */}
-                  <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                    <p className="text-base sm:text-lg font-semibold text-gray-800 text-center">{inputText}</p>
+                  <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                    <p className="text-sm sm:text-base font-semibold text-gray-800 text-center line-clamp-3">
+                      {inputText}
+                    </p>
                   </div>
                 </div>
               )}
