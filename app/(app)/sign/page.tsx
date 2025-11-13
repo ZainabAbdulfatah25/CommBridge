@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Camera, Volume2, SwitchCamera } from "lucide-react"
@@ -17,25 +17,51 @@ export default function SignDetectionPage() {
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facingMode },
+      console.log("[v0] Start button clicked, requesting camera access")
+      console.log("[v0] Getting user media with constraints:", {
+        video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false,
       })
 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false,
+      })
+
+      console.log("[v0] Camera stream obtained successfully")
       streamRef.current = stream
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream
+        console.log("[v0] Stream assigned to video element")
+
+        // Wait for video to load metadata
+        videoRef.current.onloadedmetadata = () => {
+          console.log("[v0] Video metadata loaded")
+          videoRef.current
+            ?.play()
+            .then(() => {
+              console.log("[v0] Video playing successfully")
+            })
+            .catch((err) => {
+              console.error("[v0] Error playing video:", err)
+            })
+        }
       }
       setIsDetecting(true)
     } catch (err) {
       alert("Camera access denied or not available")
-      console.error(err)
+      console.error("[v0] Camera error:", err)
     }
   }
 
   const stopCamera = () => {
+    console.log("[v0] Stopping camera and detection")
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop())
+      streamRef.current.getTracks().forEach((track) => {
+        console.log("[v0] Stopped track:", track.kind)
+        track.stop()
+      })
       streamRef.current = null
     }
     if (videoRef.current) {
@@ -58,6 +84,14 @@ export default function SignDetectionPage() {
     setFacingMode(newMode)
     setTimeout(() => startCamera(), 100)
   }
+
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop())
+      }
+    }
+  }, [])
 
   return (
     <div className="h-full">
@@ -87,7 +121,14 @@ export default function SignDetectionPage() {
           ) : (
             <div className="relative w-full max-w-3xl">
               <div className="relative aspect-video overflow-hidden rounded-2xl bg-gray-900">
-                <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover scale-x-[-1]" />
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="h-full w-full object-cover"
+                  style={{ transform: "scaleX(-1)" }}
+                />
                 <div className="absolute top-4 right-4">
                   <Button size="icon" variant="secondary" className="rounded-full bg-white/90" onClick={switchCamera}>
                     <SwitchCamera className="h-5 w-5" />
