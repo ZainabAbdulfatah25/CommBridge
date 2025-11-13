@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Camera, Volume2 } from "lucide-react"
+import { Camera, Volume2, SwitchCamera } from "lucide-react"
 import Link from "next/link"
 
 type TabType = "sign-detection" | "voice-translation" | "learning"
@@ -31,6 +31,7 @@ export default function SignDetectionPage() {
   const [detectedText, setDetectedText] = useState("")
   const [currentWord, setCurrentWord] = useState("")
   const [confidence, setConfidence] = useState(0)
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("user")
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const detectionIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -106,7 +107,7 @@ export default function SignDetectionPage() {
         setCameraError(null)
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            facingMode: "user",
+            facingMode: facingMode,
             width: { ideal: 1280 },
             height: { ideal: 720 },
           },
@@ -139,6 +140,37 @@ export default function SignDetectionPage() {
         } else {
           setCameraError("Unable to access camera. Please check your permissions and try again.")
         }
+      }
+    }
+  }
+
+  const toggleCamera = async () => {
+    const newFacingMode = facingMode === "user" ? "environment" : "user"
+    setFacingMode(newFacingMode)
+
+    if (isDetecting && streamRef.current) {
+      // Stop current stream
+      streamRef.current.getTracks().forEach((track) => track.stop())
+
+      // Start new stream with different camera
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: newFacingMode,
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+        })
+
+        streamRef.current = stream
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream
+          await videoRef.current.play()
+        }
+      } catch (error) {
+        console.error("Camera toggle error:", error)
+        setCameraError("Unable to switch camera. Please try again.")
       }
     }
   }
@@ -223,6 +255,16 @@ export default function SignDetectionPage() {
                       </p>
                     </div>
                   )}
+                </div>
+                <div className="absolute top-4 right-4">
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    className="rounded-full bg-white/90 hover:bg-white backdrop-blur-sm"
+                    onClick={toggleCamera}
+                  >
+                    <SwitchCamera className="h-5 w-5 text-gray-700" />
+                  </Button>
                 </div>
                 <div className="absolute bottom-4 left-4 right-4 flex items-center justify-center">
                   <div className="rounded-lg bg-white/90 px-4 sm:px-6 py-2 sm:py-3 backdrop-blur-sm">
