@@ -5,11 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Camera, SwitchCamera } from "lucide-react"
 import { PremiumLock } from "@/components/premium-lock"
-import { SignLanguageAvatar } from "@/components/sign-language-avatar"
-import { TranslationTabs } from "@/components/translation-tabs"
 
 const commonSigns = ["Hello", "Thanks", "Yes", "No", "Please", "Help", "Good"]
-
 const FREE_DAILY_LIMIT = 5
 
 interface SignDetectionClientProps {
@@ -33,55 +30,45 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
     }
 
     try {
-      console.log("[v0] Start button clicked, requesting camera access")
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
         audio: false,
       })
 
-      console.log("[v0] Camera stream obtained successfully")
       streamRef.current = stream
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream
 
         videoRef.current.onloadedmetadata = () => {
-          console.log("[v0] Video metadata loaded")
           videoRef.current
             ?.play()
             .then(() => {
-              console.log("[v0] Video playing successfully")
               startDetection()
             })
             .catch((err) => {
-              console.error("[v0] Error playing video:", err)
+              console.error("Error playing video:", err)
             })
         }
       }
       setIsDetecting(true)
     } catch (err) {
       alert("Camera access denied or not available")
-      console.error("[v0] Camera error:", err)
+      console.error("Camera error:", err)
     }
   }
 
   const startDetection = () => {
-    console.log("[v0] Starting sign detection simulation")
     detectionIntervalRef.current = setInterval(() => {
       const randomSign = commonSigns[Math.floor(Math.random() * commonSigns.length)]
-      const confidence = (Math.random() * 30 + 70).toFixed(1)
-
       setDetectedText((prev) => {
         const newText = prev ? `${prev} ${randomSign}` : randomSign
-        console.log("[v0] Detected sign:", randomSign, "Confidence:", confidence + "%")
         return newText
       })
     }, 2000)
   }
 
   const stopCamera = () => {
-    console.log("[v0] Stopping camera and detection")
-
     if (!isPremium) {
       setDetectionCount((prev) => prev + 1)
     }
@@ -93,7 +80,6 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
 
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => {
-        console.log("[v0] Stopped track:", track.kind)
         track.stop()
       })
       streamRef.current = null
@@ -132,11 +118,17 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
 
   return (
     <div className="h-full bg-gray-50">
-      <TranslationTabs
-        currentTab="sign"
-        isPremium={isPremium}
-        usageText={!isPremium ? `Daily detections used: ${detectionCount} / ${FREE_DAILY_LIMIT}` : undefined}
-      />
+      {/* Header */}
+      <div className="border-b bg-white px-8 py-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900">Sign Detection</h1>
+          {!isPremium && (
+            <div className="text-sm text-gray-600">
+              Daily detections: {detectionCount} / {FREE_DAILY_LIMIT}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Main Content */}
       <div className="p-4 md:p-8">
@@ -144,7 +136,7 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
           <div className="flex items-center justify-center min-h-[400px]">
             <PremiumLock
               feature="Unlimited Sign Detection"
-              description={`You've reached your daily limit of ${FREE_DAILY_LIMIT} detections. Upgrade to Premium for unlimited access and advanced AI-powered detection.`}
+              description={`You've reached your daily limit of ${FREE_DAILY_LIMIT} detections. Upgrade to Premium for unlimited access.`}
             />
           </div>
         ) : (
@@ -198,17 +190,24 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
                 <CardContent>
                   <div className="flex justify-center">
                     {detectedText ? (
-                      <SignLanguageAvatar
-                        currentWord={detectedText.split(" ").slice(-1)[0] || ""}
-                        fullText={detectedText}
-                        isAnimating={isDetecting}
-                      />
+                      <div className="relative h-80 w-80 overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
+                        <img
+                          src="/sign-language-interpreter-showing-signs.jpg"
+                          alt="Sign language display"
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
                     ) : (
                       <div className="min-h-[256px] rounded-lg bg-gray-100 p-6 flex items-center justify-center">
-                        <p className="text-gray-500">Start signing to see avatar display...</p>
+                        <p className="text-gray-500">Start signing to see display...</p>
                       </div>
                     )}
                   </div>
+                  {detectedText && (
+                    <div className="mt-4 text-center">
+                      <p className="text-lg font-semibold text-gray-800">{detectedText.split(" ").slice(-1)[0]}</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 

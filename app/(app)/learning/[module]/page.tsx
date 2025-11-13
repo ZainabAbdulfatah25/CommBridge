@@ -7,8 +7,6 @@ import { Progress } from "@/components/ui/progress"
 import { useRouter, useParams } from "next/navigation"
 import { ArrowLeft, Volume2, Mic } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
-import { SignLanguageAvatar } from "@/components/sign-language-avatar"
-import { TranslationTabs } from "@/components/translation-tabs"
 
 type LessonContent = {
   word: string
@@ -341,10 +339,7 @@ export default function LessonModulePage() {
 
   const [isRecording, setIsRecording] = useState(false)
   const [spokenText, setSpokenText] = useState("")
-  const [isAnimating, setIsAnimating] = useState(false)
-  const [currentWord, setCurrentWord] = useState("")
   const recognitionRef = useRef<any>(null)
-  const animationIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const moduleContent = moduleData[module]
 
@@ -380,12 +375,6 @@ export default function LessonModulePage() {
         }
       }
     }
-
-    return () => {
-      if (animationIntervalRef.current) {
-        clearInterval(animationIntervalRef.current)
-      }
-    }
   }, [])
 
   const handleMicClick = useCallback(() => {
@@ -406,36 +395,6 @@ export default function LessonModulePage() {
       }
     }
   }, [isRecording])
-
-  useEffect(() => {
-    if (animationIntervalRef.current) {
-      clearInterval(animationIntervalRef.current)
-    }
-
-    if (spokenText && isRecording) {
-      setIsAnimating(true)
-      const words = spokenText.split(" ")
-      let wordIndex = 0
-
-      animationIntervalRef.current = setInterval(() => {
-        if (wordIndex < words.length) {
-          setCurrentWord(words[wordIndex])
-          wordIndex++
-        } else {
-          wordIndex = 0
-        }
-      }, 800)
-    } else {
-      setIsAnimating(false)
-      setCurrentWord("")
-    }
-
-    return () => {
-      if (animationIntervalRef.current) {
-        clearInterval(animationIntervalRef.current)
-      }
-    }
-  }, [spokenText, isRecording])
 
   useEffect(() => {
     if (!moduleContent) {
@@ -507,8 +466,9 @@ export default function LessonModulePage() {
 
   return (
     <div className="h-full bg-gray-50">
-      {/* Header with unified tabs */}
-      <TranslationTabs currentTab="learning" isPremium={true} />
+      <div className="border-b bg-white px-8 py-4">
+        <h1 className="text-lg font-semibold text-gray-900">Learning Module</h1>
+      </div>
 
       {/* Module Title and Progress */}
       <div className="border-b bg-white px-8 py-4">
@@ -549,8 +509,17 @@ export default function LessonModulePage() {
               </div>
 
               <div className="flex justify-center">
-                {isAnimating && spokenText ? (
-                  <SignLanguageAvatar currentWord={currentWord} fullText={spokenText} isAnimating={true} />
+                {spokenText ? (
+                  <div className="relative h-80 w-80 overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
+                    <img
+                      src="/sign-language-interpreter-displaying-words.jpg"
+                      alt="Sign language display"
+                      className="h-full w-full object-cover"
+                    />
+                    <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2">
+                      <p className="text-center font-semibold text-gray-800">{spokenText}</p>
+                    </div>
+                  </div>
                 ) : (
                   <div className="relative h-80 w-80 overflow-hidden rounded-lg bg-gray-100">
                     {!imageLoaded && (

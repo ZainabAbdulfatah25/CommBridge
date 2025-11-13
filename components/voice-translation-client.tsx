@@ -5,8 +5,6 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Mic } from "lucide-react"
 import { PremiumLock } from "@/components/premium-lock"
-import { SignLanguageAvatar } from "@/components/sign-language-avatar"
-import { TranslationTabs } from "@/components/translation-tabs"
 
 const FREE_DAILY_LIMIT = 10
 
@@ -18,11 +16,8 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
   const [language, setLanguage] = useState("English")
   const [inputText, setInputText] = useState("")
   const [isListening, setIsListening] = useState(false)
-  const [currentWord, setCurrentWord] = useState("")
-  const [wordIndex, setWordIndex] = useState(0)
   const [translationCount, setTranslationCount] = useState(0)
   const recognitionRef = useRef<any>(null)
-  const animationIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const hasReachedLimit = !isPremium && translationCount >= FREE_DAILY_LIMIT
 
@@ -74,44 +69,8 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
       if (recognitionRef.current) {
         recognitionRef.current.stop()
       }
-      if (animationIntervalRef.current) {
-        clearInterval(animationIntervalRef.current)
-      }
     }
-  }, [language])
-
-  useEffect(() => {
-    if (inputText) {
-      const words = inputText.trim().split(" ").filter(Boolean)
-      if (words.length > 0) {
-        setWordIndex(0)
-        setCurrentWord(words[0])
-
-        if (animationIntervalRef.current) {
-          clearInterval(animationIntervalRef.current)
-        }
-
-        animationIntervalRef.current = setInterval(() => {
-          setWordIndex((prevIndex) => {
-            const nextIndex = (prevIndex + 1) % words.length
-            setCurrentWord(words[nextIndex])
-            return nextIndex
-          })
-        }, 800)
-      }
-    } else {
-      setCurrentWord("")
-      if (animationIntervalRef.current) {
-        clearInterval(animationIntervalRef.current)
-      }
-    }
-
-    return () => {
-      if (animationIntervalRef.current) {
-        clearInterval(animationIntervalRef.current)
-      }
-    }
-  }, [inputText])
+  }, [language, isListening])
 
   const toggleListening = () => {
     if (hasReachedLimit && !isListening) {
@@ -132,11 +91,17 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
 
   return (
     <div className="h-full bg-gray-50">
-      <TranslationTabs
-        currentTab="voice"
-        isPremium={isPremium}
-        usageText={!isPremium ? `Daily translations used: ${translationCount} / ${FREE_DAILY_LIMIT}` : undefined}
-      />
+      {/* Header with tabs */}
+      <div className="border-b bg-white px-8 py-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900">Voice to Sign Translation</h1>
+          {!isPremium && (
+            <div className="text-sm text-gray-600">
+              Daily translations: {translationCount} / {FREE_DAILY_LIMIT}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Main Content */}
       <div className="flex h-[calc(100vh-180px)] items-center justify-center p-4 md:p-8">
@@ -192,14 +157,23 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
               </div>
             </div>
 
-            {/* Sign Display - Text to Sign */}
+            {/* Sign Display Section */}
             {inputText && (
               <div className="rounded-lg bg-white p-8 shadow-sm">
                 <div className="mb-4 text-center">
                   <h3 className="text-lg font-semibold text-gray-800">Sign Language Display</h3>
                 </div>
-                <div className="flex flex-col items-center gap-4">
-                  <SignLanguageAvatar currentWord={currentWord} fullText={inputText} isAnimating={true} />
+                <div className="flex justify-center">
+                  <div className="relative h-80 w-80 overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
+                    <img
+                      src="/sign-language-interpreter-displaying-words.jpg"
+                      alt="Sign language display"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                </div>
+                <div className="mt-4 text-center">
+                  <p className="text-lg font-semibold text-gray-800">{inputText}</p>
                 </div>
               </div>
             )}
