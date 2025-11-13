@@ -65,7 +65,7 @@ export default function LoginPage() {
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-            <CardDescription>Sign in to your CommBridge account</CardDescription>
+            <CardDescription>Continue bridging communication with sign language</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin}>
