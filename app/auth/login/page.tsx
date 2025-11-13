@@ -25,15 +25,28 @@ export default function LoginPage() {
     setIsLoading(true)
     setError(null)
 
+    if (!email.trim() || !password.trim()) {
+      setError("Email and password are required")
+      setIsLoading(false)
+      return
+    }
+
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.toLowerCase().trim(),
         password,
       })
-      if (error) throw error
-      router.push("/dashboard")
+      if (error) {
+        if (error.message.includes("Invalid login credentials")) {
+          setError("Invalid email or password. Please try again.")
+        } else {
+          throw error
+        }
+      } else {
+        router.push("/dashboard")
+      }
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
+      setError(error instanceof Error ? error.message : "An error occurred during sign in")
     } finally {
       setIsLoading(false)
     }

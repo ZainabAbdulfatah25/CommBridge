@@ -26,33 +26,46 @@ export default function SignUpPage() {
     setIsLoading(true)
     setError(null)
 
+    // Validation
+    if (!email.trim() || !password.trim() || !displayName.trim()) {
+      setError("All fields are required")
+      setIsLoading(false)
+      return
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long")
+      setIsLoading(false)
+      return
+    }
+
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+      setError("Password must contain uppercase, lowercase, and numbers")
+      setIsLoading(false)
+      return
+    }
+
     if (password !== repeatPassword) {
       setError("Passwords do not match")
       setIsLoading(false)
       return
     }
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters")
-      setIsLoading(false)
-      return
-    }
-
     try {
       const { error } = await supabase.auth.signUp({
-        email,
+        email: email.toLowerCase().trim(),
         password,
         options: {
           emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/dashboard`,
           data: {
-            display_name: displayName,
+            display_name: displayName.trim(),
           },
         },
       })
       if (error) throw error
       router.push("/auth/sign-up-success")
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
+      setError(error instanceof Error ? error.message : "An error occurred during sign up")
     } finally {
       setIsLoading(false)
     }
