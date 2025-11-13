@@ -13,8 +13,10 @@ export default function VoiceTranslationPage() {
   const [language, setLanguage] = useState("English")
   const [inputText, setInputText] = useState("")
   const [isRecording, setIsRecording] = useState(false)
-  const [currentWords, setCurrentWords] = useState<string[]>([])
+  const [isAnimating, setIsAnimating] = useState(false)
+  const [currentWord, setCurrentWord] = useState("")
   const recognitionRef = useRef<any>(null)
+  const animationIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const languageMap = useRef<Record<string, string>>({
     English: "en-US",
@@ -38,9 +40,6 @@ export default function VoiceTranslationPage() {
             .join("")
 
           setInputText(transcript)
-
-          const words = transcript.trim().split(/\s+/).filter(Boolean)
-          setCurrentWords(words)
         }
 
         recognitionRef.current.onerror = (event: any) => {
@@ -55,7 +54,43 @@ export default function VoiceTranslationPage() {
 
       recognitionRef.current.lang = languageMap.current[language] || "en-US"
     }
+
+    return () => {
+      if (animationIntervalRef.current) {
+        clearInterval(animationIntervalRef.current)
+      }
+    }
   }, [language])
+
+  useEffect(() => {
+    if (animationIntervalRef.current) {
+      clearInterval(animationIntervalRef.current)
+    }
+
+    if (inputText && isRecording) {
+      setIsAnimating(true)
+      const words = inputText.split(" ").filter(Boolean)
+      let wordIndex = 0
+
+      animationIntervalRef.current = setInterval(() => {
+        if (wordIndex < words.length) {
+          setCurrentWord(words[wordIndex])
+          wordIndex++
+        } else {
+          wordIndex = 0
+        }
+      }, 800)
+    } else {
+      setIsAnimating(false)
+      setCurrentWord("")
+    }
+
+    return () => {
+      if (animationIntervalRef.current) {
+        clearInterval(animationIntervalRef.current)
+      }
+    }
+  }, [inputText, isRecording])
 
   const handleLanguageChange = useCallback(
     (newLanguage: string) => {
@@ -64,8 +99,9 @@ export default function VoiceTranslationPage() {
         recognitionRef.current.stop()
       }
       setIsRecording(false)
-      setCurrentWords([])
       setInputText("")
+      setIsAnimating(false)
+      setCurrentWord("")
     },
     [isRecording],
   )
@@ -82,19 +118,12 @@ export default function VoiceTranslationPage() {
       try {
         recognitionRef.current.start()
         setIsRecording(true)
-        setCurrentWords([])
         setInputText("")
       } catch (error) {
         console.warn("Could not start recognition:", error)
       }
     }
   }, [isRecording])
-
-  const getSignImage = (text: string) => {
-    const word = text.toLowerCase()
-    // Generate sign representation using ASL fingerspelling and word signs
-    return `https://www.lifeprint.com/asl101/images-signs/${word}.jpg`
-  }
 
   return (
     <div className="h-full">
@@ -174,8 +203,6 @@ export default function VoiceTranslationPage() {
                 value={inputText}
                 onChange={(e) => {
                   setInputText(e.target.value)
-                  const words = e.target.value.trim().split(/\s+/).filter(Boolean)
-                  setCurrentWords(words)
                 }}
                 className="flex-1 rounded-lg border border-gray-300 px-4 py-3 text-base md:text-lg focus:border-[#3b82f6] focus:outline-hidden focus:ring-2 focus:ring-[#3b82f6]/20"
                 placeholder={`Type or speak in ${language}...`}
@@ -198,47 +225,21 @@ export default function VoiceTranslationPage() {
           <div className="rounded-lg bg-white p-4 md:p-6 shadow-sm">
             <h3 className="mb-4 text-base md:text-lg font-semibold text-gray-900">Sign Language Interpreter</h3>
             <div className="flex min-h-[300px] md:min-h-[400px] flex-col items-center justify-center rounded-lg bg-gradient-to-br from-purple-50 to-blue-50 p-6 md:p-8">
-              {currentWords.length > 0 ? (
+              {isAnimating && inputText ? (
                 <div className="flex flex-col items-center gap-6 w-full">
-                  <div className="w-full overflow-x-auto pb-4">
-                    <div className="flex gap-4 min-w-min px-2">
-                      {currentWords.map((word, index) => (
-                        <div key={`${word}-${index}`} className="flex flex-col items-center gap-3 flex-shrink-0">
-                          <div className="relative">
-                            <div className="h-32 w-32 md:h-40 md:w-40 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-xl p-1">
-                              <div className="h-full w-full rounded-full bg-white flex items-center justify-center overflow-hidden">
-                                <img
-                                  src={`https://www.signasl.org/sign/${word.toLowerCase()}`}
-                                  alt={`Sign for ${word}`}
-                                  className="h-full w-full object-contain p-2"
-                                  onError={(e) => {
-                                    const target = e.currentTarget
-                                    // Try ASL University as fallback
-                                    if (!target.dataset.fallback) {
-                                      target.dataset.fallback = "1"
-                                      target.src = `https://www.lifeprint.com/asl101/images-signs/${word.toLowerCase()}.jpg`
-                                    } else if (target.dataset.fallback === "1") {
-                                      // Final fallback: show letter-based representation
-                                      target.dataset.fallback = "2"
-                                      target.src = `/placeholder.svg?height=160&width=160&text=${word}`
-                                    }
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                          <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-md border border-blue-200">
-                            <p className="text-sm md:text-base font-semibold text-blue-600">{word}</p>
-                          </div>
-                        </div>
-                      ))}
+                  <div className="relative">
+                    <div className="h-40 w-40 md:h-48 md:w-48 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 animate-pulse shadow-xl" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="h-32 w-32 md:h-40 md:w-40 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center">
+                        <div className="text-5xl md:text-7xl">👋</div>
+                      </div>
                     </div>
                   </div>
-
+                  <p className="text-2xl md:text-3xl font-bold text-gray-800 animate-pulse">{currentWord}</p>
                   <div className="rounded-xl bg-white/90 backdrop-blur-sm p-4 md:p-6 shadow-lg border-2 border-blue-200 w-full max-w-2xl">
                     <div className="text-center">
-                      <p className="text-xs md:text-sm text-gray-500 mb-2 uppercase tracking-wide">You said:</p>
-                      <p className="text-lg md:text-2xl text-gray-700 leading-relaxed">{inputText}</p>
+                      <p className="text-xs md:text-sm text-gray-500 mb-2 uppercase tracking-wide">Full text:</p>
+                      <p className="text-base md:text-lg text-gray-700 leading-relaxed">{inputText}</p>
                     </div>
                   </div>
                 </div>
