@@ -12,7 +12,7 @@ export default function Home() {
         <div className="mb-8">
           <div className="relative w-[200px] h-[200px]">
             <Image
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Designer__2_-removebg-preview-hPnP21OE6rr1gVvwl4A4j6bxQs88qG.png"
+              src="/images/designer-2-removebg-preview.png"
               alt="CommBridge Logo"
               fill
               className="object-contain"
@@ -26,7 +26,7 @@ export default function Home() {
 
         {/* Buttons */}
         <div className="flex flex-col gap-4 w-full px-2">
-          <Link href="/sign-up" prefetch={true}>
+          <Link href="/auth/sign-up" prefetch={true}>
             <Button
               size="lg"
               className="w-full h-12 bg-[#3b82f6] hover:bg-[#2563eb] text-white text-base font-medium rounded-xl"
@@ -35,13 +35,13 @@ export default function Home() {
             </Button>
           </Link>
 
-          <Link href="/sign-in" prefetch={true}>
+          <Link href="/auth/login" prefetch={true}>
             <Button
               size="lg"
               variant="outline"
               className="w-full h-12 bg-white border-2 border-[#3b82f6] text-[#3b82f6] hover:bg-gray-50 text-base font-medium rounded-xl"
             >
-              Learn More
+              Sign In
             </Button>
           </Link>
         </div>
