@@ -32,7 +32,7 @@ export default function Home() {
             </Button>
           </Link>
 
-          <Link href="/auth/login" prefetch={true}>
+          <Link href="/about" prefetch={true}>
             <Button
               size="lg"
               variant="outline"
