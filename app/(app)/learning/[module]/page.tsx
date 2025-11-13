@@ -466,13 +466,13 @@ export default function LessonModulePage() {
 
   return (
     <div className="h-full bg-gray-50">
-      <div className="border-b bg-white px-8 py-4">
+      <div className="border-b bg-white px-4 sm:px-6 lg:px-8 py-4">
         <h1 className="text-lg font-semibold text-gray-900">Learning Module</h1>
       </div>
 
       {/* Module Title and Progress */}
-      <div className="border-b bg-white px-8 py-4">
-        <div className="flex items-center justify-between">
+      <div className="border-b bg-white px-4 sm:px-6 lg:px-8 py-4">
+        <div className="flex items-center justify-between gap-4">
           <Button
             variant="ghost"
             onClick={() => startTransition(() => router.push("/learning"))}
@@ -480,10 +480,10 @@ export default function LessonModulePage() {
             disabled={isPending}
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Learning
+            Back
           </Button>
-          <h1 className="text-2xl font-bold text-gray-900">{moduleContent?.title}</h1>
-          <div className="text-sm text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-900 text-center flex-1">{moduleContent?.title}</h1>
+          <div className="text-sm text-gray-600 hidden sm:block">
             Lesson {currentLesson + 1} of {moduleContent?.lessons.length}
           </div>
         </div>
@@ -493,35 +493,35 @@ export default function LessonModulePage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex h-[calc(100vh-200px)] items-center justify-center p-8">
+      <div className="flex h-[calc(100vh-200px)] items-center justify-center p-4 sm:p-6 lg:p-8">
         <Card className="w-full max-w-3xl">
-          <CardContent className="p-12">
-            <div className="space-y-8">
+          <CardContent className="p-6 sm:p-8 lg:p-12">
+            <div className="space-y-6 sm:space-y-8">
               {/* Lesson Word */}
               <div className="text-center">
                 <div className="mb-4 flex items-center justify-center gap-4">
-                  <h2 className="text-4xl font-bold text-gray-900">{currentLessonData.word}</h2>
+                  <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">{currentLessonData.word}</h2>
                   <Button variant="ghost" size="icon" onClick={playAudio} className="rounded-full">
                     <Volume2 className="h-6 w-6 text-[#3b82f6]" />
                   </Button>
                 </div>
-                <p className="text-lg text-gray-600">{currentLessonData.translation}</p>
+                <p className="text-base sm:text-lg text-gray-600">{currentLessonData.translation}</p>
               </div>
 
               <div className="flex justify-center">
                 {spokenText ? (
-                  <div className="relative h-80 w-80 overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
+                  <div className="relative h-64 w-64 sm:h-80 sm:w-80 overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
                     <img
                       src="/sign-language-interpreter-displaying-words.jpg"
                       alt="Sign language display"
                       className="h-full w-full object-cover"
                     />
                     <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2">
-                      <p className="text-center font-semibold text-gray-800">{spokenText}</p>
+                      <p className="text-center font-semibold text-gray-800 text-sm sm:text-base">{spokenText}</p>
                     </div>
                   </div>
                 ) : (
-                  <div className="relative h-80 w-80 overflow-hidden rounded-lg bg-gray-100">
+                  <div className="relative h-64 w-64 sm:h-80 sm:w-80 overflow-hidden rounded-lg bg-gray-100">
                     {!imageLoaded && (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-[#3b82f6]" />
@@ -561,7 +561,7 @@ export default function LessonModulePage() {
                 {spokenText && !isRecording && (
                   <div className="rounded-lg bg-blue-50 p-4 text-center">
                     <p className="text-sm text-gray-600 mb-1">You said:</p>
-                    <p className="text-lg font-semibold text-gray-800">{spokenText}</p>
+                    <p className="text-base sm:text-lg font-semibold text-gray-800">{spokenText}</p>
                   </div>
                 )}
               </div>
@@ -575,12 +575,12 @@ export default function LessonModulePage() {
                 </div>
               ) : (
                 <div className="rounded-lg bg-blue-50 p-6 text-center">
-                  <p className="text-lg text-gray-800">{currentLessonData.description}</p>
+                  <p className="text-base sm:text-lg text-gray-800">{currentLessonData.description}</p>
                 </div>
               )}
 
               {/* Navigation Buttons */}
-              <div className="flex justify-between gap-4 pt-4">
+              <div className="flex gap-4 pt-4 justify-center sm:justify-between">
                 <Button
                   variant="outline"
                   onClick={handlePrevious}

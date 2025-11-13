@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Mic } from "lucide-react"
 import { PremiumLock } from "@/components/premium-lock"
+import { Button } from "@/components/ui/button"
+import { ArrowLeft } from "lucide-react"
 
 const FREE_DAILY_LIMIT = 10
 
@@ -15,6 +17,7 @@ interface VoiceTranslationClientProps {
 export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProps) {
   const [language, setLanguage] = useState("English")
   const [inputText, setInputText] = useState("")
+  const [spokenText, setSpokenText] = useState("")
   const [isListening, setIsListening] = useState(false)
   const [translationCount, setTranslationCount] = useState(0)
   const recognitionRef = useRef<any>(null)
@@ -44,6 +47,7 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
 
         if (finalTranscript) {
           setInputText((prev) => prev + finalTranscript)
+          setSpokenText((prev) => prev + finalTranscript)
         } else if (interimTranscript) {
           setInputText((prev) => {
             const words = prev.split(" ")
@@ -92,11 +96,11 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
   return (
     <div className="h-full bg-gray-50">
       {/* Header with tabs */}
-      <div className="border-b bg-white px-8 py-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Voice to Sign Translation</h1>
+      <div className="border-b bg-white px-4 sm:px-6 lg:px-8 py-4">
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Voice to Sign Translation</h1>
           {!isPremium && (
-            <div className="text-sm text-gray-600">
+            <div className="text-xs sm:text-sm text-gray-600">
               Daily translations: {translationCount} / {FREE_DAILY_LIMIT}
             </div>
           )}
@@ -104,7 +108,7 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
       </div>
 
       {/* Main Content */}
-      <div className="flex h-[calc(100vh-180px)] items-center justify-center p-4 md:p-8">
+      <div className="flex h-[calc(100vh-180px)] items-center justify-center p-4 sm:p-6 lg:p-8">
         {hasReachedLimit ? (
           <PremiumLock
             feature="Unlimited Translations"
@@ -113,7 +117,7 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
         ) : (
           <div className="w-full max-w-2xl space-y-6">
             {/* Language Selection */}
-            <div className="rounded-lg bg-white p-6 shadow-sm">
+            <div className="rounded-lg bg-white p-4 sm:p-6 shadow-sm">
               <div className="mb-4 flex items-center gap-3">
                 <label className="text-sm font-medium text-gray-700">Select Language:</label>
                 <Select value={language} onValueChange={setLanguage}>
@@ -131,7 +135,7 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
             </div>
 
             {/* Input Section - Voice to Text */}
-            <div className="rounded-lg bg-white p-6 shadow-sm">
+            <div className="rounded-lg bg-white p-4 sm:p-6 shadow-sm">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Input
@@ -159,12 +163,25 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
 
             {/* Sign Display Section */}
             {inputText && (
-              <div className="rounded-lg bg-white p-8 shadow-sm">
-                <div className="mb-4 text-center">
+              <div className="rounded-lg bg-white p-4 sm:p-8 shadow-sm">
+                <div className="mb-6 flex items-center justify-between">
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setInputText("")
+                      setSpokenText("")
+                    }}
+                    className="gap-2"
+                    size="sm"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back
+                  </Button>
                   <h3 className="text-lg font-semibold text-gray-800">Sign Language Display</h3>
+                  <div className="w-20" />
                 </div>
                 <div className="flex justify-center">
-                  <div className="relative h-80 w-80 overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
+                  <div className="relative h-64 w-64 sm:h-80 sm:w-80 overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
                     <img
                       src="/sign-language-interpreter-displaying-words.jpg"
                       alt="Sign language display"
@@ -173,7 +190,7 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
                   </div>
                 </div>
                 <div className="mt-4 text-center">
-                  <p className="text-lg font-semibold text-gray-800">{inputText}</p>
+                  <p className="text-base sm:text-lg font-semibold text-gray-800">{inputText}</p>
                 </div>
               </div>
             )}

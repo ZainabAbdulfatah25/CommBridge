@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Camera, SwitchCamera, Lock } from "lucide-react"
+import { Camera, SwitchCamera, Lock, ArrowLeft } from "lucide-react"
 import { PremiumLock } from "@/components/premium-lock"
 import { PremiumBadge } from "@/components/premium-badge"
 
@@ -106,6 +106,11 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
     setTimeout(() => startCamera(), 100)
   }
 
+  const handleBack = () => {
+    setDetectedText("")
+    stopCamera()
+  }
+
   useEffect(() => {
     return () => {
       if (streamRef.current) {
@@ -120,14 +125,14 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
   return (
     <div className="h-full bg-gray-50">
       {/* Header */}
-      <div className="border-b bg-white px-8 py-4">
-        <div className="flex items-center justify-between">
+      <div className="border-b bg-white px-4 sm:px-6 lg:px-8 py-4">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900">Sign Detection</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Sign Detection</h1>
             {isPremium && <PremiumBadge size="md" />}
           </div>
           {!isPremium && (
-            <div className="text-sm text-gray-600">
+            <div className="text-xs sm:text-sm text-gray-600">
               Daily detections: {detectionCount} / {FREE_DAILY_LIMIT}
             </div>
           )}
@@ -135,7 +140,7 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
       </div>
 
       {/* Main Content */}
-      <div className="p-4 md:p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         {hasReachedLimit ? (
           <div className="flex items-center justify-center min-h-[400px]">
             <PremiumLock
@@ -188,13 +193,21 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
             {/* Output Sections */}
             <div className="grid gap-6 lg:grid-cols-2">
               <Card>
-                <CardHeader>
-                  <CardTitle>Sign Language Display</CardTitle>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle>Sign Language Display</CardTitle>
+                    {detectedText && (
+                      <Button variant="ghost" size="sm" onClick={handleBack} className="gap-2">
+                        <ArrowLeft className="h-4 w-4" />
+                        Back
+                      </Button>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="flex justify-center">
                     {detectedText ? (
-                      <div className="relative h-80 w-80 overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
+                      <div className="relative h-64 w-64 sm:h-80 sm:w-80 overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
                         <img
                           src="/sign-language-interpreter-showing-signs.jpg"
                           alt="Sign language display"
@@ -210,20 +223,22 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
                   </div>
                   {detectedText && (
                     <div className="mt-4 text-center">
-                      <p className="text-lg font-semibold text-gray-800">{detectedText.split(" ").slice(-1)[0]}</p>
+                      <p className="text-base sm:text-lg font-semibold text-gray-800">
+                        {detectedText.split(" ").slice(-1)[0]}
+                      </p>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
               <Card>
-                <CardHeader>
+                <CardHeader className="pb-3">
                   <CardTitle>Text Output</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="min-h-[256px] rounded-lg bg-gray-100 p-6 flex items-center justify-center">
                     {detectedText ? (
-                      <p className="text-gray-800">{detectedText}</p>
+                      <p className="text-sm sm:text-base text-gray-800">{detectedText}</p>
                     ) : (
                       <div className="flex flex-col items-center gap-2">
                         <Lock className="h-5 w-5 text-gray-400" />
