@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Camera, Volume2 } from "lucide-react"
 import Link from "next/link"
+import { detectHandSign } from "@/lib/sign-detection"
 
 type TabType = "sign-detection" | "voice-translation" | "learning"
 
@@ -13,11 +14,12 @@ export default function SignDetectionPage() {
   const [isDetecting, setIsDetecting] = useState(false)
   const [detectedText, setDetectedText] = useState("")
   const [currentWord, setCurrentWord] = useState("")
+  const [confidence, setConfidence] = useState(0)
   const videoRef = useRef<HTMLVideoElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const detectionIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const [cameraError, setCameraError] = useState<string | null>(null)
+  const lastWordRef = useRef<string>("")
 
   useEffect(() => {
     return () => {
@@ -30,62 +32,35 @@ export default function SignDetectionPage() {
     }
   }, [])
 
-  const detectSign = () => {
-    if (!videoRef.current || !canvasRef.current) return
+  const detectSign = async () => {
+    if (!videoRef.current) return
 
-    const video = videoRef.current
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext("2d")
+    try {
+      const result = await detectHandSign(videoRef.current)
 
-    if (!ctx) return
+      if (result && result.confidence > 0.75) {
+        setCurrentWord(result.word)
+        setConfidence(result.confidence)
 
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
+        // Only add word if it's different from the last detected word
+        if (result.word !== lastWordRef.current) {
+          lastWordRef.current = result.word
+          setDetectedText((prev) => (prev ? `${prev} ${result.word}` : result.word))
 
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-
-    const detectedGesture = analyzeGesture(imageData)
-
-    if (detectedGesture) {
-      setCurrentWord(detectedGesture)
-      setDetectedText((prev) => {
-        const words = prev.trim().split(" ")
-        if (words[words.length - 1] !== detectedGesture) {
-          return prev ? `${prev} ${detectedGesture}` : detectedGesture
+          // Clear current word after 2 seconds
+          setTimeout(() => {
+            setCurrentWord("")
+          }, 2000)
         }
-        return prev
-      })
+      } else {
+        // No confident detection, clear current word
+        if (currentWord) {
+          setTimeout(() => setCurrentWord(""), 500)
+        }
+      }
+    } catch (error) {
+      console.error("Sign detection error:", error)
     }
-  }
-
-  const analyzeGesture = (imageData: ImageData): string | null => {
-    const signs = [
-      "Hello",
-      "Thank you",
-      "Yes",
-      "No",
-      "Please",
-      "Help",
-      "Good",
-      "Bad",
-      "More",
-      "Stop",
-      "I",
-      "You",
-      "Love",
-      "Happy",
-      "Sad",
-    ]
-    const randomIndex = Math.floor(Math.random() * signs.length)
-
-    // Simulate real-time detection with 60% success rate
-    if (Math.random() > 0.4) {
-      return signs[randomIndex]
-    }
-
-    return null
   }
 
   const handleStartDetection = async () => {
@@ -102,11 +77,16 @@ export default function SignDetectionPage() {
       if (videoRef.current) {
         videoRef.current.srcObject = null
       }
+      lastWordRef.current = ""
     } else {
       try {
         setCameraError(null)
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "user", width: 640, height: 480 },
+          video: {
+            facingMode: "user",
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
         })
         streamRef.current = stream
         if (videoRef.current) {
@@ -116,10 +96,11 @@ export default function SignDetectionPage() {
         setIsDetecting(true)
         setDetectedText("")
         setCurrentWord("")
+        lastWordRef.current = ""
 
         detectionIntervalRef.current = setInterval(() => {
           detectSign()
-        }, 1000)
+        }, 800)
       } catch (error) {
         if (error instanceof Error) {
           if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
@@ -209,19 +190,21 @@ export default function SignDetectionPage() {
           ) : (
             <div className="relative w-full max-w-3xl">
               <div className="relative aspect-video overflow-hidden rounded-2xl bg-gray-900 shadow-xl">
-                <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
-                <canvas ref={canvasRef} className="hidden" />
+                <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover scale-x-[-1]" />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   {currentWord && (
                     <div className="rounded-lg bg-green-500/90 px-6 py-3 backdrop-blur-sm animate-pulse">
-                      <p className="text-center text-lg font-bold text-white">{currentWord}</p>
+                      <p className="text-center text-lg font-bold text-white">
+                        {currentWord}
+                        <span className="ml-2 text-sm opacity-80">({Math.round(confidence * 100)}%)</span>
+                      </p>
                     </div>
                   )}
                 </div>
                 <div className="absolute bottom-4 left-4 right-4 flex items-center justify-center">
                   <div className="rounded-lg bg-white/90 px-4 sm:px-6 py-2 sm:py-3 backdrop-blur-sm">
                     <p className="text-center text-xs sm:text-sm font-medium text-gray-800">
-                      {isDetecting ? "Detecting signs in real-time..." : "Face the camera and start signing"}
+                      {isDetecting ? "Show your hand signs clearly to the camera" : "Face the camera and start signing"}
                     </p>
                   </div>
                 </div>
