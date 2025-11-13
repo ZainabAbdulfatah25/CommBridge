@@ -466,139 +466,142 @@ export default function LessonModulePage() {
   }
 
   return (
-    <div className="h-full bg-gray-50">
+    <div className="h-full w-full flex flex-col bg-gray-50">
       <FeatureNavTabs />
 
-      <div className="border-b bg-white px-4 sm:px-6 lg:px-8 py-4">
-        <h1 className="text-lg font-semibold text-gray-900">Learning Module</h1>
-      </div>
-
-      {/* Module Title and Progress */}
-      <div className="border-b bg-white px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex items-center justify-between gap-4">
-          <Button
-            variant="ghost"
-            onClick={() => startTransition(() => router.push("/learning"))}
-            className="gap-2"
-            disabled={isPending}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
-          <h1 className="text-2xl font-bold text-gray-900 text-center flex-1">{moduleContent?.title}</h1>
-          <div className="text-sm text-gray-600 hidden sm:block">
-            Lesson {currentLesson + 1} of {moduleContent?.lessons.length}
+      <div className="bg-white border-b px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="max-w-6xl mx-auto space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <Button
+              variant="ghost"
+              onClick={() => startTransition(() => router.push("/learning"))}
+              className="gap-2"
+              disabled={isPending}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 flex-1 text-center">
+              {moduleContent?.title}
+            </h1>
+            <div className="text-sm text-gray-600 hidden sm:block w-32 text-right">
+              Lesson {currentLesson + 1} / {moduleContent?.lessons.length}
+            </div>
           </div>
-        </div>
-        <div className="mt-4">
-          <Progress value={progress} className="h-2" />
+          <div className="w-full">
+            <Progress value={progress} className="h-2" />
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex h-[calc(100vh-280px)] items-center justify-center p-4 sm:p-6 lg:p-8">
-        <Card className="w-full max-w-3xl">
-          <CardContent className="p-6 sm:p-8 lg:p-12">
-            <div className="space-y-6 sm:space-y-8">
-              {/* Lesson Word */}
-              <div className="text-center">
-                <div className="mb-4 flex items-center justify-center gap-4">
-                  <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">{currentLessonData.word}</h2>
-                  <Button variant="ghost" size="icon" onClick={playAudio} className="rounded-full">
-                    <Volume2 className="h-6 w-6 text-[#3b82f6]" />
-                  </Button>
+      <div className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
+        <div className="max-w-6xl mx-auto">
+          <Card className="w-full">
+            <CardContent className="p-6 sm:p-8 lg:p-10">
+              <div className="space-y-6 sm:space-y-8">
+                {/* Lesson Word */}
+                <div className="text-center">
+                  <div className="mb-4 flex items-center justify-center gap-4">
+                    <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">{currentLessonData.word}</h2>
+                    <Button variant="ghost" size="icon" onClick={playAudio} className="rounded-full">
+                      <Volume2 className="h-6 w-6 text-[#3b82f6]" />
+                    </Button>
+                  </div>
+                  <p className="text-base sm:text-lg text-gray-600">{currentLessonData.translation}</p>
                 </div>
-                <p className="text-base sm:text-lg text-gray-600">{currentLessonData.translation}</p>
-              </div>
 
-              <div className="flex justify-center">
-                {spokenText ? (
-                  <div className="relative h-64 w-64 sm:h-80 sm:w-80 overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
-                    <img
-                      src="/sign-language-interpreter-displaying-words.jpg"
-                      alt="Sign language display"
-                      className="h-full w-full object-cover"
-                    />
-                    <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2">
-                      <p className="text-center font-semibold text-gray-800 text-sm sm:text-base">{spokenText}</p>
+                <div className="flex justify-center">
+                  {spokenText ? (
+                    <div className="relative h-64 w-64 sm:h-80 sm:w-80 overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
+                      <img
+                        src="/sign-language-interpreter-displaying-words.jpg"
+                        alt="Sign language display"
+                        className="h-full w-full object-cover"
+                      />
+                      <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2">
+                        <p className="text-center font-semibold text-gray-800 text-sm sm:text-base">{spokenText}</p>
+                      </div>
                     </div>
+                  ) : (
+                    <div className="relative h-64 w-64 sm:h-80 sm:w-80 overflow-hidden rounded-lg bg-gray-100">
+                      {!imageLoaded && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-[#3b82f6]" />
+                        </div>
+                      )}
+                      <img
+                        src={currentLessonData.imageUrl || "/placeholder.svg"}
+                        alt={currentLessonData.word}
+                        className={`h-full w-full object-cover transition-opacity duration-300 ${
+                          imageLoaded ? "opacity-100" : "opacity-0"
+                        }`}
+                        onLoad={() => setImageLoaded(true)}
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-center gap-3">
+                    <p className="text-sm font-medium text-gray-700">Practice Speaking:</p>
+                    <button
+                      className={`flex h-12 w-12 items-center justify-center rounded-full transition-all ${
+                        isRecording ? "animate-pulse bg-red-500" : "bg-[#3b82f6]"
+                      } hover:opacity-90`}
+                      onClick={handleMicClick}
+                      title={isRecording ? "Stop recording" : "Start recording"}
+                    >
+                      <Mic className="h-6 w-6 text-white" />
+                    </button>
+                  </div>
+                  {isRecording && (
+                    <div className="text-center">
+                      <p className="text-sm text-red-500 animate-pulse">
+                        🔴 Recording... Say "{currentLessonData.word}"
+                      </p>
+                    </div>
+                  )}
+                  {spokenText && !isRecording && (
+                    <div className="rounded-lg bg-blue-50 p-4 text-center">
+                      <p className="text-sm text-gray-600 mb-1">You said:</p>
+                      <p className="text-base sm:text-lg font-semibold text-gray-800">{spokenText}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Show Answer Button */}
+                {!showAnswer ? (
+                  <div className="text-center">
+                    <Button onClick={() => setShowAnswer(true)} className="bg-[#3b82f6] hover:bg-[#2563eb]">
+                      Show Instructions
+                    </Button>
                   </div>
                 ) : (
-                  <div className="relative h-64 w-64 sm:h-80 sm:w-80 overflow-hidden rounded-lg bg-gray-100">
-                    {!imageLoaded && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-[#3b82f6]" />
-                      </div>
-                    )}
-                    <img
-                      src={currentLessonData.imageUrl || "/placeholder.svg"}
-                      alt={currentLessonData.word}
-                      className={`h-full w-full object-cover transition-opacity duration-300 ${
-                        imageLoaded ? "opacity-100" : "opacity-0"
-                      }`}
-                      onLoad={() => setImageLoaded(true)}
-                      loading="lazy"
-                    />
+                  <div className="rounded-lg bg-blue-50 p-6 text-center">
+                    <p className="text-base sm:text-lg text-gray-800">{currentLessonData.description}</p>
                   </div>
                 )}
-              </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center justify-center gap-3">
-                  <p className="text-sm font-medium text-gray-700">Practice Speaking:</p>
-                  <button
-                    className={`flex h-12 w-12 items-center justify-center rounded-full transition-all ${
-                      isRecording ? "animate-pulse bg-red-500" : "bg-[#3b82f6]"
-                    } hover:opacity-90`}
-                    onClick={handleMicClick}
-                    title={isRecording ? "Stop recording" : "Start recording"}
+                {/* Navigation Buttons */}
+                <div className="flex gap-4 pt-4 justify-center sm:justify-between">
+                  <Button
+                    variant="outline"
+                    onClick={handlePrevious}
+                    disabled={currentLesson === 0}
+                    className="w-32 bg-transparent"
                   >
-                    <Mic className="h-6 w-6 text-white" />
-                  </button>
-                </div>
-                {isRecording && (
-                  <div className="text-center">
-                    <p className="text-sm text-red-500 animate-pulse">🔴 Recording... Say "{currentLessonData.word}"</p>
-                  </div>
-                )}
-                {spokenText && !isRecording && (
-                  <div className="rounded-lg bg-blue-50 p-4 text-center">
-                    <p className="text-sm text-gray-600 mb-1">You said:</p>
-                    <p className="text-base sm:text-lg font-semibold text-gray-800">{spokenText}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Show Answer Button */}
-              {!showAnswer ? (
-                <div className="text-center">
-                  <Button onClick={() => setShowAnswer(true)} className="bg-[#3b82f6] hover:bg-[#2563eb]">
-                    Show Instructions
+                    Previous
+                  </Button>
+                  <Button onClick={handleNext} className="w-32 bg-[#3b82f6] hover:bg-[#2563eb]" disabled={isPending}>
+                    {currentLesson === moduleContent.lessons.length - 1 ? "Finish" : "Next"}
                   </Button>
                 </div>
-              ) : (
-                <div className="rounded-lg bg-blue-50 p-6 text-center">
-                  <p className="text-base sm:text-lg text-gray-800">{currentLessonData.description}</p>
-                </div>
-              )}
-
-              {/* Navigation Buttons */}
-              <div className="flex gap-4 pt-4 justify-center sm:justify-between">
-                <Button
-                  variant="outline"
-                  onClick={handlePrevious}
-                  disabled={currentLesson === 0}
-                  className="w-32 bg-transparent"
-                >
-                  Previous
-                </Button>
-                <Button onClick={handleNext} className="w-32 bg-[#3b82f6] hover:bg-[#2563eb]" disabled={isPending}>
-                  {currentLesson === moduleContent.lessons.length - 1 ? "Finish" : "Next"}
-                </Button>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )
