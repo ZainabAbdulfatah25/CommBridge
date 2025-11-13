@@ -40,35 +40,40 @@ export default function SignDetectionPage() {
 
   useEffect(() => {
     return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop())
-      }
-      if (detectionIntervalRef.current) {
-        clearInterval(detectionIntervalRef.current)
-      }
+      stopCamera()
     }
   }, [])
 
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop())
+      streamRef.current = null
+    }
+    if (detectionIntervalRef.current) {
+      clearInterval(detectionIntervalRef.current)
+      detectionIntervalRef.current = null
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null
+    }
+  }
+
   const detectSign = () => {
-    // Simulate detection with random chance (30% detection rate)
     if (Math.random() > 0.3) {
       return
     }
 
-    // Return a random sign with realistic confidence
     const randomSign = commonSigns[Math.floor(Math.random() * commonSigns.length)]
-    const detectedConfidence = 0.76 + Math.random() * 0.19 // 76-95% confidence
+    const detectedConfidence = 0.76 + Math.random() * 0.19
 
     if (detectedConfidence > 0.75) {
       setCurrentWord(randomSign)
       setConfidence(detectedConfidence)
 
-      // Only add word if it's different from the last detected word
       if (randomSign !== lastWordRef.current) {
         lastWordRef.current = randomSign
         setDetectedText((prev) => (prev ? `${prev} ${randomSign}` : randomSign))
 
-        // Clear current word after 2 seconds
         setTimeout(() => {
           setCurrentWord("")
         }, 2000)
@@ -77,40 +82,27 @@ export default function SignDetectionPage() {
   }
 
   const startDetection = () => {
-    setIsDetecting(true)
-    setDetectedText("")
-    setCurrentWord("")
-    lastWordRef.current = ""
-
     detectionIntervalRef.current = setInterval(() => {
       detectSign()
-    }, 1500) // Every 1.5 seconds
+    }, 1500)
   }
 
   const handleStartDetection = async () => {
     if (isDetecting) {
       setIsDetecting(false)
-      if (detectionIntervalRef.current) {
-        clearInterval(detectionIntervalRef.current)
-        detectionIntervalRef.current = null
-      }
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop())
-        streamRef.current = null
-      }
-      if (videoRef.current) {
-        videoRef.current.srcObject = null
-      }
+      stopCamera()
       lastWordRef.current = ""
+      setCurrentWord("")
     } else {
       try {
         setCameraError(null)
+        setDetectedText("")
+        setCurrentWord("")
+        lastWordRef.current = ""
+
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: facingMode,
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
+          video: { facingMode: facingMode },
+          audio: false,
         })
 
         streamRef.current = stream
@@ -118,60 +110,61 @@ export default function SignDetectionPage() {
         if (videoRef.current) {
           videoRef.current.srcObject = stream
 
-          try {
-            await videoRef.current.play()
-            startDetection()
-          } catch (playError) {
-            console.error("Play error:", playError)
+          videoRef.current.onloadedmetadata = () => {
+            if (videoRef.current) {
+              videoRef.current.play()
+              setIsDetecting(true)
+              startDetection()
+            }
           }
         }
       } catch (error) {
         console.error("Camera error:", error)
         if (error instanceof Error) {
           if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
-            setCameraError("Camera access was denied. Please allow camera permissions and try again.")
+            setCameraError("Camera access denied. Please allow camera permissions.")
           } else if (error.name === "NotFoundError") {
-            setCameraError("No camera found on this device.")
+            setCameraError("No camera found.")
           } else if (error.name === "NotReadableError") {
-            setCameraError("Camera is already in use by another application.")
+            setCameraError("Camera is in use by another app.")
           } else {
-            setCameraError(`Unable to access camera: ${error.message}`)
+            setCameraError(`Camera error: ${error.message}`)
           }
         } else {
-          setCameraError("Unable to access camera. Please check your permissions and try again.")
+          setCameraError("Unable to access camera.")
         }
       }
     }
   }
 
   const toggleCamera = async () => {
+    if (!isDetecting) return
+
     const newFacingMode = facingMode === "user" ? "environment" : "user"
-    setFacingMode(newFacingMode)
 
-    if (isDetecting && streamRef.current) {
-      // Stop current stream
-      streamRef.current.getTracks().forEach((track) => track.stop())
+    stopCamera()
 
-      // Start new stream with different camera
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: newFacingMode,
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
-        })
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: newFacingMode },
+        audio: false,
+      })
 
-        streamRef.current = stream
+      streamRef.current = stream
+      setFacingMode(newFacingMode)
 
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream
-          await videoRef.current.play()
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+        videoRef.current.onloadedmetadata = () => {
+          if (videoRef.current) {
+            videoRef.current.play()
+            startDetection()
+          }
         }
-      } catch (error) {
-        console.error("Camera toggle error:", error)
-        setCameraError("Unable to switch camera. Please try again.")
       }
+    } catch (error) {
+      console.error("Camera toggle error:", error)
+      setCameraError("Unable to switch camera.")
     }
   }
 
@@ -269,7 +262,7 @@ export default function SignDetectionPage() {
                 <div className="absolute bottom-4 left-4 right-4 flex items-center justify-center">
                   <div className="rounded-lg bg-white/90 px-4 sm:px-6 py-2 sm:py-3 backdrop-blur-sm">
                     <p className="text-center text-xs sm:text-sm font-medium text-gray-800">
-                      {isDetecting ? "Show your hand signs clearly to the camera" : "Face the camera and start signing"}
+                      Show your hand signs clearly to the camera
                     </p>
                   </div>
                 </div>
