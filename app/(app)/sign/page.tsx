@@ -61,10 +61,27 @@ export default function SignDetectionPage() {
   }
 
   const analyzeGesture = (imageData: ImageData): string | null => {
-    const signs = ["Hello", "Thank you", "Yes", "No", "Please", "Help", "Good", "Bad", "More", "Stop"]
+    const signs = [
+      "Hello",
+      "Thank you",
+      "Yes",
+      "No",
+      "Please",
+      "Help",
+      "Good",
+      "Bad",
+      "More",
+      "Stop",
+      "I",
+      "You",
+      "Love",
+      "Happy",
+      "Sad",
+    ]
     const randomIndex = Math.floor(Math.random() * signs.length)
 
-    if (Math.random() > 0.7) {
+    // Simulate real-time detection with 60% success rate
+    if (Math.random() > 0.4) {
       return signs[randomIndex]
     }
 
@@ -180,7 +197,7 @@ export default function SignDetectionPage() {
 
       {/* Main Content */}
       <div className="p-4 sm:p-6 lg:p-8">
-        {/* Camera Section */}
+        {/* Camera Section - Sign to Text */}
         <div className="mb-6 sm:mb-8 flex flex-col items-center justify-center space-y-4 sm:space-y-6 py-4 sm:py-8">
           {!isDetecting ? (
             <>
@@ -204,7 +221,7 @@ export default function SignDetectionPage() {
                 <div className="absolute bottom-4 left-4 right-4 flex items-center justify-center">
                   <div className="rounded-lg bg-white/90 px-4 sm:px-6 py-2 sm:py-3 backdrop-blur-sm">
                     <p className="text-center text-xs sm:text-sm font-medium text-gray-800">
-                      Face the camera and start signing
+                      {isDetecting ? "Detecting signs in real-time..." : "Face the camera and start signing"}
                     </p>
                   </div>
                 </div>

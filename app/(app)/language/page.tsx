@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -13,6 +13,108 @@ export default function VoiceTranslationPage() {
   const [activeTab, setActiveTab] = useState<TabType>("voice-translation")
   const [language, setLanguage] = useState("English")
   const [inputText, setInputText] = useState("")
+  const [isListening, setIsListening] = useState(false)
+  const [currentWord, setCurrentWord] = useState("")
+  const [wordIndex, setWordIndex] = useState(0)
+  const recognitionRef = useRef<any>(null)
+  const animationIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && ("SpeechRecognition" in window || "webkitSpeechRecognition" in window)) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+      recognitionRef.current = new SpeechRecognition()
+      recognitionRef.current.continuous = true
+      recognitionRef.current.interimResults = true
+      recognitionRef.current.lang = language === "Hausa" ? "ha" : language === "Arabic" ? "ar" : "en-US"
+
+      recognitionRef.current.onresult = (event: any) => {
+        let interimTranscript = ""
+        let finalTranscript = ""
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + " "
+          } else {
+            interimTranscript += transcript
+          }
+        }
+
+        if (finalTranscript) {
+          setInputText((prev) => prev + finalTranscript)
+        } else if (interimTranscript) {
+          setInputText((prev) => {
+            const words = prev.split(" ")
+            words[words.length - 1] = interimTranscript
+            return words.join(" ")
+          })
+        }
+      }
+
+      recognitionRef.current.onerror = (event: any) => {
+        console.error("Speech recognition error:", event.error)
+        setIsListening(false)
+      }
+
+      recognitionRef.current.onend = () => {
+        if (isListening) {
+          recognitionRef.current.start()
+        }
+      }
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop()
+      }
+      if (animationIntervalRef.current) {
+        clearInterval(animationIntervalRef.current)
+      }
+    }
+  }, [language])
+
+  useEffect(() => {
+    if (inputText) {
+      const words = inputText.trim().split(" ").filter(Boolean)
+      if (words.length > 0) {
+        setWordIndex(0)
+        setCurrentWord(words[0])
+
+        if (animationIntervalRef.current) {
+          clearInterval(animationIntervalRef.current)
+        }
+
+        animationIntervalRef.current = setInterval(() => {
+          setWordIndex((prevIndex) => {
+            const nextIndex = (prevIndex + 1) % words.length
+            setCurrentWord(words[nextIndex])
+            return nextIndex
+          })
+        }, 800)
+      }
+    } else {
+      setCurrentWord("")
+      if (animationIntervalRef.current) {
+        clearInterval(animationIntervalRef.current)
+      }
+    }
+
+    return () => {
+      if (animationIntervalRef.current) {
+        clearInterval(animationIntervalRef.current)
+      }
+    }
+  }, [inputText])
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop()
+      setIsListening(false)
+    } else {
+      recognitionRef.current?.start()
+      setIsListening(true)
+    }
+  }
 
   return (
     <div className="h-full bg-gray-50">
@@ -82,7 +184,7 @@ export default function VoiceTranslationPage() {
             </div>
           </div>
 
-          {/* Input Section */}
+          {/* Input Section - Voice to Text */}
           <div className="rounded-lg bg-white p-6 shadow-sm">
             <div className="space-y-4">
               <div className="flex items-center gap-3">
@@ -94,28 +196,40 @@ export default function VoiceTranslationPage() {
                   className="flex-1"
                 />
                 <button
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#3b82f6] hover:bg-[#2563eb] transition-colors"
-                  title="Click microphone to speak"
+                  className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
+                    isListening ? "bg-red-500 hover:bg-red-600 animate-pulse" : "bg-[#3b82f6] hover:bg-[#2563eb]"
+                  }`}
+                  onClick={toggleListening}
+                  title={isListening ? "Stop listening" : "Click microphone to speak"}
                 >
                   <Mic className="h-5 w-5 text-white" />
                 </button>
               </div>
-              <p className="text-sm text-gray-500">Click microphone to start speaking</p>
+              <p className="text-sm text-gray-500">
+                {isListening ? `Listening in ${language}...` : "Click microphone to start speaking"}
+              </p>
             </div>
           </div>
 
-          {/* Sign Display */}
+          {/* Sign Display - Text to Sign */}
           {inputText && (
             <div className="rounded-lg bg-white p-8 shadow-sm">
               <div className="mb-4 text-center">
-                <h3 className="text-lg font-semibold text-gray-800">Sign Language Translation</h3>
+                <h3 className="text-lg font-semibold text-gray-800">Sign Language Display</h3>
               </div>
-              <div className="flex justify-center">
-                <div className="h-64 w-64 rounded-lg bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-6xl mb-4">🤟</div>
-                    <p className="text-gray-600">{inputText}</p>
+              <div className="flex flex-col items-center gap-4">
+                {/* Animated avatar showing current word */}
+                <div className="relative h-64 w-64 rounded-lg bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center overflow-hidden">
+                  <div className="text-center animate-pulse">
+                    <div className="text-7xl mb-2">🤟</div>
+                    <div className="bg-white/80 backdrop-blur-sm rounded-lg px-4 py-2 mx-4">
+                      <p className="text-2xl font-bold text-gray-800">{currentWord}</p>
+                    </div>
                   </div>
+                </div>
+                {/* Full transcript */}
+                <div className="w-full rounded-lg bg-gray-50 p-4">
+                  <p className="text-center text-gray-700">{inputText}</p>
                 </div>
               </div>
             </div>
