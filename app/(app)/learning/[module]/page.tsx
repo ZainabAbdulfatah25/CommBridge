@@ -8,6 +8,7 @@ import { useRouter, useParams } from "next/navigation"
 import { ArrowLeft, Volume2, Mic } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { SignLanguageAvatar } from "@/components/sign-language-avatar"
+import { TranslationTabs } from "@/components/translation-tabs"
 
 type LessonContent = {
   word: string
@@ -506,8 +507,11 @@ export default function LessonModulePage() {
 
   return (
     <div className="h-full bg-gray-50">
-      {/* Header */}
-      <div className="border-b bg-white px-8 py-6">
+      {/* Header with unified tabs */}
+      <TranslationTabs currentTab="learning" isPremium={true} />
+
+      {/* Module Title and Progress */}
+      <div className="border-b bg-white px-8 py-4">
         <div className="flex items-center justify-between">
           <Button
             variant="ghost"
@@ -518,9 +522,9 @@ export default function LessonModulePage() {
             <ArrowLeft className="h-4 w-4" />
             Back to Learning
           </Button>
-          <h1 className="text-2xl font-bold text-gray-900">{moduleContent.title}</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{moduleContent?.title}</h1>
           <div className="text-sm text-gray-600">
-            Lesson {currentLesson + 1} of {moduleContent.lessons.length}
+            Lesson {currentLesson + 1} of {moduleContent?.lessons.length}
           </div>
         </div>
         <div className="mt-4">
@@ -529,7 +533,7 @@ export default function LessonModulePage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex h-[calc(100vh-180px)] items-center justify-center p-8">
+      <div className="flex h-[calc(100vh-200px)] items-center justify-center p-8">
         <Card className="w-full max-w-3xl">
           <CardContent className="p-12">
             <div className="space-y-8">

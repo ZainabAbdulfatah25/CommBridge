@@ -4,10 +4,9 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Camera, SwitchCamera } from "lucide-react"
-import Link from "next/link"
 import { PremiumLock } from "@/components/premium-lock"
-import { PremiumBadge } from "@/components/premium-badge"
 import { SignLanguageAvatar } from "@/components/sign-language-avatar"
+import { TranslationTabs } from "@/components/translation-tabs"
 
 const commonSigns = ["Hello", "Thanks", "Yes", "No", "Please", "Help", "Good"]
 
@@ -132,32 +131,15 @@ export function SignDetectionClient({ isPremium }: SignDetectionClientProps) {
   }, [])
 
   return (
-    <div className="h-full">
-      {/* Tabs */}
-      <div className="border-b bg-white px-4 sm:px-8 py-4 sm:py-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex gap-3 sm:gap-4 flex-1">
-            <Button variant="default" className="flex-1 bg-[#3b82f6]" asChild>
-              <Link href="/sign">Sign Detection</Link>
-            </Button>
-            <Button variant="outline" className="flex-1 bg-transparent" asChild>
-              <Link href="/language">Voice Translation</Link>
-            </Button>
-            <Button variant="outline" className="flex-1 bg-transparent" asChild>
-              <Link href="/learning">Learning</Link>
-            </Button>
-          </div>
-          {isPremium && <PremiumBadge className="ml-4" />}
-        </div>
-        {!isPremium && (
-          <div className="text-sm text-gray-600 text-center">
-            Daily detections used: {detectionCount} / {FREE_DAILY_LIMIT}
-          </div>
-        )}
-      </div>
+    <div className="h-full bg-gray-50">
+      <TranslationTabs
+        currentTab="sign"
+        isPremium={isPremium}
+        usageText={!isPremium ? `Daily detections used: ${detectionCount} / ${FREE_DAILY_LIMIT}` : undefined}
+      />
 
       {/* Main Content */}
-      <div className="p-4 sm:p-8">
+      <div className="p-4 md:p-8">
         {hasReachedLimit ? (
           <div className="flex items-center justify-center min-h-[400px]">
             <PremiumLock

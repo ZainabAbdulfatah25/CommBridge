@@ -1,14 +1,12 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Mic } from "lucide-react"
-import Link from "next/link"
 import { PremiumLock } from "@/components/premium-lock"
-import { PremiumBadge } from "@/components/premium-badge"
 import { SignLanguageAvatar } from "@/components/sign-language-avatar"
+import { TranslationTabs } from "@/components/translation-tabs"
 
 const FREE_DAILY_LIMIT = 10
 
@@ -134,42 +132,11 @@ export function VoiceTranslationClient({ isPremium }: VoiceTranslationClientProp
 
   return (
     <div className="h-full bg-gray-50">
-      {/* Tabs */}
-      <div className="border-b bg-white px-4 py-4 md:px-8 md:py-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex flex-col gap-3 md:flex-row md:gap-4 flex-1">
-            <Button
-              variant="outline"
-              className="flex-1 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-              asChild
-            >
-              <Link href="/sign" prefetch={true}>
-                Sign Detection
-              </Link>
-            </Button>
-            <Button variant="default" className="flex-1 bg-[#3b82f6] text-white hover:bg-[#2563eb]" asChild>
-              <Link href="/language" prefetch={true}>
-                Voice Translation
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              className="flex-1 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-              asChild
-            >
-              <Link href="/learning" prefetch={true}>
-                Learning
-              </Link>
-            </Button>
-          </div>
-          {isPremium && <PremiumBadge className="ml-4" />}
-        </div>
-        {!isPremium && (
-          <div className="text-sm text-gray-600 text-center">
-            Daily translations used: {translationCount} / {FREE_DAILY_LIMIT}
-          </div>
-        )}
-      </div>
+      <TranslationTabs
+        currentTab="voice"
+        isPremium={isPremium}
+        usageText={!isPremium ? `Daily translations used: ${translationCount} / ${FREE_DAILY_LIMIT}` : undefined}
+      />
 
       {/* Main Content */}
       <div className="flex h-[calc(100vh-180px)] items-center justify-center p-4 md:p-8">
