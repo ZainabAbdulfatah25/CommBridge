@@ -1,4 +1,6 @@
-import { requireAuth, getUserProfile } from "@/lib/auth"
+"use client"
+
+import { useAuth } from "@/contexts/auth-context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Check, Crown, Lock } from "lucide-react"
@@ -37,9 +39,10 @@ const premiumFeatures = [
   },
 ]
 
-export default async function PremiumPage() {
-  const user = await requireAuth()
-  const profile = await getUserProfile(user.id)
+export default function PremiumPage() {
+  const { user, profile } = useAuth()
+
+  if (!user || !profile) return null
 
   const isPremium = profile?.is_premium || false
   const premiumExpiresAt = profile?.premium_expires_at ? new Date(profile.premium_expires_at) : null

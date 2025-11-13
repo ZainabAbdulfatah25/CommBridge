@@ -1,15 +1,33 @@
+"use client"
+
 import type React from "react"
 import { AppSidebar } from "@/components/app-sidebar"
 import { MobileHeader } from "@/components/mobile-header"
-import { requireAuth, getUserProfile } from "@/lib/auth"
+import { AuthProvider, useAuth } from "@/contexts/auth-context"
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 
-export default async function AppLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const user = await requireAuth()
-  const profile = await getUserProfile(user.id)
+function ProtectedLayout({ children }: { children: React.ReactNode }) {
+  const { user, profile, loading } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/auth/login")
+    }
+  }, [user, loading, router])
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (!user || !profile) {
+    return null
+  }
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -20,5 +38,17 @@ export default async function AppLayout({
         <main className="flex-1 overflow-y-auto bg-[#e8eaf0]">{children}</main>
       </div>
     </div>
+  )
+}
+
+export default function AppLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <AuthProvider>
+      <ProtectedLayout>{children}</ProtectedLayout>
+    </AuthProvider>
   )
 }

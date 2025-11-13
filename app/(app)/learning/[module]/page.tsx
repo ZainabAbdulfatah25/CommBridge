@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { useRouter, useParams } from "next/navigation"
 import { ArrowLeft, Volume2, Mic } from "lucide-react"
-import { useUser } from "@/contexts/user-context"
+import { useAuth } from "@/contexts/auth-context"
 
 type LessonContent = {
   word: string
@@ -330,12 +330,12 @@ export default function LessonModulePage() {
   const router = useRouter()
   const params = useParams()
   const module = params.module as string
+  const { user } = useAuth()
   const [currentLesson, setCurrentLesson] = useState(0)
   const [showAnswer, setShowAnswer] = useState(false)
   const [completed, setCompleted] = useState<number[]>([])
   const [imageLoaded, setImageLoaded] = useState(false)
   const [isPending, startTransition] = useTransition()
-  const { completeLesson, addActivity, addAchievement } = useUser()
 
   const [isRecording, setIsRecording] = useState(false)
   const [spokenText, setSpokenText] = useState("")
@@ -453,6 +453,8 @@ export default function LessonModulePage() {
   }, [currentLesson])
 
   const saveProgress = async () => {
+    if (!user) return
+
     try {
       const progressPercentage = Math.round(((currentLesson + 1) / moduleContent.lessons.length) * 100)
       const isCompleted = currentLesson === moduleContent.lessons.length - 1
@@ -471,7 +473,7 @@ export default function LessonModulePage() {
     }
   }
 
-  if (!moduleContent) {
+  if (!user || !moduleContent) {
     return null
   }
 
@@ -480,31 +482,12 @@ export default function LessonModulePage() {
 
   const handleNext = () => {
     if (currentLesson < moduleContent.lessons.length - 1) {
-      completeLesson(module, currentLesson)
-      addActivity({
-        title: `${moduleContent.title} - ${currentLessonData.word}`,
-        time: "Just now",
-        accuracy: "98% Accuracy",
-      })
-
       setCompleted([...completed, currentLesson])
       setCurrentLesson(currentLesson + 1)
       setShowAnswer(false)
 
       saveProgress()
     } else {
-      completeLesson(module, currentLesson)
-      addActivity({
-        title: `Completed ${moduleContent.title} Module`,
-        time: "Just now",
-        accuracy: "100% Complete",
-      })
-      addAchievement({
-        title: `${moduleContent.title} Master`,
-        time: "Just now",
-        accuracy: "12 lessons completed",
-      })
-
       saveProgress()
 
       startTransition(() => {
