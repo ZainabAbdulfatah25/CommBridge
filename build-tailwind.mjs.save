@@ -1,0 +1,15 @@
+import fs from 'fs';
+import postcss from 'postcss';
+import tailwind from '@tailwindcss/postcss';
+import autoprefixer from 'autoprefixer';
+
+const cssInput = fs.readFileSync('input.css', 'utf-8'); // your source CSS
+
+postcss([tailwind, autoprefixer])
+  .process(cssInput, { from: 'input.css', to: 'output.css' })
+  .then(result => {
+    fs.writeFileSync('output.css', result.css);
+    if (result.map) fs.writeFileSync('output.css.map', result.map.toString());
+    console.log('Tailwind build complete!');
+  })
+  .catch(err => console.error(err));
